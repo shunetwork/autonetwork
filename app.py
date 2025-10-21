@@ -156,7 +156,18 @@ def logs():
 @login_required
 def compare():
     """配置对比页面"""
-    return render_template('compare.html')
+    # 获取活跃设备列表
+    devices = Device.query.filter_by(is_active=True).all()
+    device_list = []
+    for device in devices:
+        device_list.append({
+            'id': device.id,
+            'alias': device.alias,
+            'ip_address': device.ip_address,
+            'is_active': device.is_active
+        })
+    
+    return render_template('compare.html', devices=device_list)
 
 if __name__ == '__main__':
     with app.app_context():

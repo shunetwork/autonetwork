@@ -81,6 +81,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         </label>
                         <select class="form-select" id="deviceSelect">
                             <option value="">请选择设备...</option>
+                            {% for device in devices %}
+                            <option value="{{ device.id }}">{{ device.alias or device.ip_address }} ({{ device.ip_address }})</option>
+                            {% endfor %}
                         </select>
                         <small class="form-text text-muted">选择设备后，将显示该设备的所有备份任务</small>
                     </div>
@@ -243,9 +246,18 @@ $(document).ready(function() {
     $('#deviceSelect').show();
     console.log('设备选择区域强制显示完成');
     
-    // 加载设备和备份任务
-    console.log('开始加载设备...');
-    loadDevices();
+    // 检查是否已有设备数据
+    const deviceSelect = $('#deviceSelect');
+    const hasDevices = deviceSelect.find('option').length > 1; // 除了默认选项外还有其他选项
+    
+    if (hasDevices) {
+        console.log('服务器端已预加载设备数据，跳过JavaScript加载');
+        console.log('设备选项数量:', deviceSelect.find('option').length);
+    } else {
+        console.log('开始通过JavaScript加载设备...');
+        loadDevices();
+    }
+    
     loadBackupTasks();
     
     // 检查URL参数
