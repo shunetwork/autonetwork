@@ -311,7 +311,7 @@ $(document).ready(function() {
     });
     
     // 设备选择变化
-    $('#deviceSelect').change(function() {
+    $('#deviceSelect').on('change', function() {
         const deviceId = $(this).val();
         console.log('选择设备ID:', deviceId);
         console.log('设备选择元素:', this);
@@ -334,6 +334,13 @@ $(document).ready(function() {
             $('#compareBtn').prop('disabled', true);
         }
     });
+    
+    // 强制触发设备选择事件（如果已经有值）
+    const currentDeviceId = $('#deviceSelect').val();
+    if (currentDeviceId) {
+        console.log('页面加载时发现已选择设备:', currentDeviceId);
+        $('#deviceSelect').trigger('change');
+    }
     
     // 选择变化
     $('#task1Select, #task2Select').change(function() {
@@ -412,9 +419,18 @@ function loadDeviceBackupTasks(deviceId) {
     console.log('开始加载设备备份任务，设备ID:', deviceId);
     console.log('API URL:', `/api/backup/device/${deviceId}`);
     
+    // 显示加载状态
+    const select1 = $('#task1Select');
+    const select2 = $('#task2Select');
+    select1.empty().append('<option value="">加载中...</option>');
+    select2.empty().append('<option value="">加载中...</option>');
+    
     fetch(`/api/backup/device/${deviceId}`)
     .then(response => {
         console.log('API响应状态:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
         return response.json();
     })
     .then(data => {
@@ -422,8 +438,6 @@ function loadDeviceBackupTasks(deviceId) {
         if (data.success) {
             const tasks = data.tasks.filter(task => task.status === 'success');
             console.log('设备成功任务数量:', tasks.length);
-            const select1 = $('#task1Select');
-            const select2 = $('#task2Select');
             
             console.log('清空并重新填充下拉框...');
             select1.empty().append('<option value="">请选择备份任务...</option>');
@@ -447,14 +461,17 @@ function loadDeviceBackupTasks(deviceId) {
             }
             
             console.log('设备备份任务加载完成，下拉框选项数量:', select1.find('option').length);
+            console.log('下拉框现在应该可以选择了');
         } else {
             console.error('设备备份任务API返回失败:', data);
-            $('#task1Select, #task2Select').append('<option value="" disabled>加载失败</option>');
+            select1.empty().append('<option value="" disabled>加载失败</option>');
+            select2.empty().append('<option value="" disabled>加载失败</option>');
         }
     })
     .catch(error => {
         console.error('Error loading device backup tasks:', error);
-        $('#task1Select, #task2Select').append('<option value="" disabled>网络错误</option>');
+        select1.empty().append('<option value="" disabled>网络错误</option>');
+        select2.empty().append('<option value="" disabled>网络错误</option>');
     });
 }
 
