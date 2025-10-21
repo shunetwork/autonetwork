@@ -223,7 +223,6 @@ $(document).ready(function() {
     console.log('文档准备就绪，开始初始化...');
     
     // 检查是否已经强制刷新过，避免无限循环
-    const urlParams = new URLSearchParams(window.location.search);
     if (!urlParams.has('force_reload') && !urlParams.has('v')) {
         console.log('强制重新加载页面...');
         window.location.href = window.location.href + (window.location.search ? '&' : '?') + 'force_reload=1&t=' + new Date().getTime();
@@ -261,7 +260,6 @@ $(document).ready(function() {
     loadBackupTasks();
     
     // 检查URL参数
-    const urlParams = new URLSearchParams(window.location.search);
     const task1Id = urlParams.get('task1');
     const task2Id = urlParams.get('task2');
     
