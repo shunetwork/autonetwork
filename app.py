@@ -155,7 +155,7 @@ def logs():
 @app.route('/compare')
 @login_required
 def compare():
-    """配置对比页面"""
+    """配置对比页面 - Vue 3 CDN版本"""
     # 获取活跃设备列表
     devices = Device.query.filter_by(is_active=True).all()
     device_list = []
@@ -167,7 +167,7 @@ def compare():
             'is_active': device.is_active
         })
     
-    return render_template('compare.html', devices=device_list)
+    return render_template('compare_vue.html', devices=device_list)
 
 if __name__ == '__main__':
     with app.app_context():
