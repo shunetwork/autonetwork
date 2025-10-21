@@ -1,0 +1,665 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>设备管理 - Cisco设备配置备份系统</title>
+    
+    <!-- Element Plus CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    
+    <!-- 自定义样式 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #2c3e50;
+        }
+        
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0 25px 25px 0;
+            margin-right: 20px;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .device-form {
+            max-width: 600px;
+        }
+        
+        .device-table {
+            margin-top: 20px;
+        }
+        
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #e6f7ff;
+            color: #1890ff;
+        }
+        
+        .status-inactive {
+            background: #fff2e8;
+            color: #fa8c16;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #409eff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .main-content {
+                padding: 12px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- 侧边栏 -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <i class="el-icon-monitor"></i>
+                    Cisco备份系统
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/" class="nav-link">
+                        <i class="el-icon-house"></i>
+                        首页
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/devices" class="nav-link active">
+                        <i class="el-icon-server"></i>
+                        设备管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/backup/single" class="nav-link">
+                        <i class="el-icon-document-copy"></i>
+                        单设备备份
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/backup/batch" class="nav-link">
+                        <i class="el-icon-files"></i>
+                        批量备份
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/history" class="nav-link">
+                        <i class="el-icon-time"></i>
+                        备份历史
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/compare" class="nav-link">
+                        <i class="el-icon-data-analysis"></i>
+                        配置对比
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logs" class="nav-link">
+                        <i class="el-icon-document"></i>
+                        系统日志
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/settings" class="nav-link">
+                        <i class="el-icon-setting"></i>
+                        系统设置
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面头部 -->
+            <div class="page-header">
+                <div class="page-title">
+                    <i class="el-icon-server"></i>
+                    设备管理
+                </div>
+                <div class="page-actions">
+                    <el-button type="primary" @click="showAddDialog">
+                        <i class="el-icon-plus"></i>
+                        添加设备
+                    </el-button>
+                    <el-button @click="refreshDevices">
+                        <i class="el-icon-refresh"></i>
+                        刷新
+                    </el-button>
+                </div>
+            </div>
+
+            <!-- 设备列表 -->
+            <div class="content-card">
+                <div class="card-header">
+                    <i class="el-icon-list"></i>
+                    设备列表
+                </div>
+                <div class="card-body">
+                    <el-table :data="devices" style="width: 100%" v-loading="loading">
+                        <el-table-column prop="alias" label="设备别名" width="150">
+                            <template #default="scope">
+                                <span v-if="scope.row.alias">{{ scope.row.alias }}</span>
+                                <span v-else class="text-muted">未设置</span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="ip_address" label="IP地址" width="120"></el-table-column>
+                        <el-table-column prop="port" label="端口" width="80"></el-table-column>
+                        <el-table-column prop="protocol" label="协议" width="80">
+                            <template #default="scope">
+                                <el-tag :type="scope.row.protocol === 'ssh' ? 'success' : 'warning'">
+                                    {{ scope.row.protocol.toUpperCase() }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="device_type" label="设备类型" width="120"></el-table-column>
+                        <el-table-column prop="is_active" label="状态" width="100">
+                            <template #default="scope">
+                                <span :class="scope.row.is_active ? 'status-badge status-active' : 'status-badge status-inactive'">
+                                    {{ scope.row.is_active ? '活跃' : '禁用' }}
+                                </span>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="created_at" label="创建时间" width="160">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.created_at) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="200">
+                            <template #default="scope">
+                                <el-button size="small" @click="testConnection(scope.row)">
+                                    <i class="el-icon-connection"></i>
+                                    测试连接
+                                </el-button>
+                                <el-button size="small" type="primary" @click="editDevice(scope.row)">
+                                    <i class="el-icon-edit"></i>
+                                    编辑
+                                </el-button>
+                                <el-button size="small" type="danger" @click="deleteDevice(scope.row)">
+                                    <i class="el-icon-delete"></i>
+                                    删除
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </div>
+
+            <!-- 添加/编辑设备对话框 -->
+            <el-dialog 
+                :title="dialogTitle" 
+                v-model="dialogVisible" 
+                width="600px"
+                @close="resetForm"
+            >
+                <el-form :model="deviceForm" :rules="formRules" ref="deviceFormRef" label-width="100px">
+                    <el-form-item label="设备别名" prop="alias">
+                        <el-input v-model="deviceForm.alias" placeholder="请输入设备别名"></el-input>
+                    </el-form-item>
+                    <el-form-item label="IP地址" prop="ip_address">
+                        <el-input v-model="deviceForm.ip_address" placeholder="请输入IP地址"></el-input>
+                    </el-form-item>
+                    <el-form-item label="端口" prop="port">
+                        <el-input-number v-model="deviceForm.port" :min="1" :max="65535" placeholder="端口号"></el-input-number>
+                    </el-form-item>
+                    <el-form-item label="协议" prop="protocol">
+                        <el-select v-model="deviceForm.protocol" placeholder="请选择协议">
+                            <el-option label="SSH" value="ssh"></el-option>
+                            <el-option label="Telnet" value="telnet"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item label="用户名" prop="username">
+                        <el-input v-model="deviceForm.username" placeholder="请输入用户名"></el-input>
+                    </el-form-item>
+                    <el-form-item label="密码" prop="password">
+                        <el-input v-model="deviceForm.password" type="password" placeholder="请输入密码" show-password></el-input>
+                    </el-form-item>
+                    <el-form-item label="设备类型" prop="device_type">
+                        <el-input v-model="deviceForm.device_type" placeholder="请输入设备类型"></el-input>
+                    </el-form-item>
+                    <el-form-item label="状态">
+                        <el-switch v-model="deviceForm.is_active" active-text="活跃" inactive-text="禁用"></el-switch>
+                    </el-form-item>
+                </el-form>
+                <template #footer>
+                    <div class="dialog-footer">
+                        <el-button @click="dialogVisible = false">取消</el-button>
+                        <el-button type="primary" @click="saveDevice" :loading="saving">保存</el-button>
+                    </div>
+                </template>
+            </el-dialog>
+
+            <!-- 加载遮罩 -->
+            <div v-if="loadingVisible" class="loading-overlay">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <p>正在处理，请稍候...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Element Plus CDN -->
+    <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
+    <!-- Day.js CDN -->
+    <script src="https://unpkg.com/dayjs@1.11.10/dayjs.min.js"></script>
+
+    <script>
+        const { createApp, ref, reactive, onMounted } = Vue;
+        const { ElMessage, ElMessageBox } = ElementPlus;
+
+        const app = createApp({
+            setup() {
+                // 响应式数据
+                const devices = ref([]);
+                const loading = ref(false);
+                const loadingVisible = ref(false);
+                const dialogVisible = ref(false);
+                const saving = ref(false);
+                const isEditing = ref(false);
+                const editingId = ref(null);
+
+                const deviceForm = reactive({
+                    alias: '',
+                    ip_address: '',
+                    port: 22,
+                    protocol: 'ssh',
+                    username: '',
+                    password: '',
+                    device_type: 'cisco',
+                    is_active: true
+                });
+
+                const formRules = {
+                    ip_address: [
+                        { required: true, message: '请输入IP地址', trigger: 'blur' },
+                        { pattern: /^(\d{1,3}\.){3}\d{1,3}$/, message: '请输入有效的IP地址', trigger: 'blur' }
+                    ],
+                    port: [
+                        { required: true, message: '请输入端口号', trigger: 'blur' }
+                    ],
+                    protocol: [
+                        { required: true, message: '请选择协议', trigger: 'change' }
+                    ],
+                    username: [
+                        { required: true, message: '请输入用户名', trigger: 'blur' }
+                    ],
+                    password: [
+                        { required: true, message: '请输入密码', trigger: 'blur' }
+                    ]
+                };
+
+                // 计算属性
+                const dialogTitle = computed(() => {
+                    return isEditing.value ? '编辑设备' : '添加设备';
+                });
+
+                // 方法
+                const formatTime = (time) => {
+                    return dayjs(time).format('YYYY-MM-DD HH:mm:ss');
+                };
+
+                const loadDevices = async () => {
+                    loading.value = true;
+                    try {
+                        const response = await fetch('/api/device/list');
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            devices.value = data.devices;
+                        } else {
+                            ElMessage.error('加载设备列表失败: ' + data.error);
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                const showAddDialog = () => {
+                    isEditing.value = false;
+                    editingId.value = null;
+                    resetForm();
+                    dialogVisible.value = true;
+                };
+
+                const editDevice = (device) => {
+                    isEditing.value = true;
+                    editingId.value = device.id;
+                    Object.assign(deviceForm, {
+                        alias: device.alias || '',
+                        ip_address: device.ip_address,
+                        port: device.port,
+                        protocol: device.protocol,
+                        username: device.username,
+                        password: '', // 不显示密码
+                        device_type: device.device_type,
+                        is_active: device.is_active
+                    });
+                    dialogVisible.value = true;
+                };
+
+                const saveDevice = async () => {
+                    if (!deviceFormRef.value) return;
+                    
+                    await deviceFormRef.value.validate(async (valid) => {
+                        if (valid) {
+                            saving.value = true;
+                            try {
+                                const url = isEditing.value ? `/api/device/${editingId.value}` : '/api/device';
+                                const method = isEditing.value ? 'PUT' : 'POST';
+                                
+                                const response = await fetch(url, {
+                                    method: method,
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(deviceForm)
+                                });
+                                
+                                const data = await response.json();
+                                
+                                if (data.success) {
+                                    ElMessage.success(isEditing.value ? '设备更新成功' : '设备添加成功');
+                                    dialogVisible.value = false;
+                                    loadDevices();
+                                } else {
+                                    ElMessage.error('操作失败: ' + data.error);
+                                }
+                            } catch (error) {
+                                ElMessage.error('网络错误，请稍后重试');
+                            } finally {
+                                saving.value = false;
+                            }
+                        }
+                    });
+                };
+
+                const deleteDevice = async (device) => {
+                    try {
+                        await ElMessageBox.confirm(
+                            `确定要删除设备 "${device.alias || device.ip_address}" 吗？`,
+                            '确认删除',
+                            {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            }
+                        );
+                        
+                        loadingVisible.value = true;
+                        const response = await fetch(`/api/device/${device.id}`, {
+                            method: 'DELETE'
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            ElMessage.success('设备删除成功');
+                            loadDevices();
+                        } else {
+                            ElMessage.error('删除失败: ' + data.error);
+                        }
+                    } catch (error) {
+                        if (error !== 'cancel') {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
+                    } finally {
+                        loadingVisible.value = false;
+                    }
+                };
+
+                const testConnection = async (device) => {
+                    loadingVisible.value = true;
+                    try {
+                        const response = await fetch('/api/device/test', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json'
+                            },
+                            body: JSON.stringify({
+                                ip_address: device.ip_address,
+                                port: device.port,
+                                protocol: device.protocol,
+                                username: device.username,
+                                password: device.password || 'test'
+                            })
+                        });
+                        
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            ElMessage.success('连接测试成功');
+                        } else {
+                            ElMessage.error('连接测试失败: ' + data.error);
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        loadingVisible.value = false;
+                    }
+                };
+
+                const refreshDevices = () => {
+                    loadDevices();
+                };
+
+                const resetForm = () => {
+                    Object.assign(deviceForm, {
+                        alias: '',
+                        ip_address: '',
+                        port: 22,
+                        protocol: 'ssh',
+                        username: '',
+                        password: '',
+                        device_type: 'cisco',
+                        is_active: true
+                    });
+                };
+
+                // 组件挂载时加载数据
+                onMounted(() => {
+                    loadDevices();
+                });
+
+                return {
+                    devices,
+                    loading,
+                    loadingVisible,
+                    dialogVisible,
+                    saving,
+                    isEditing,
+                    deviceForm,
+                    formRules,
+                    dialogTitle,
+                    formatTime,
+                    showAddDialog,
+                    editDevice,
+                    saveDevice,
+                    deleteDevice,
+                    testConnection,
+                    refreshDevices,
+                    resetForm
+                };
+            }
+        });
+
+        // 使用Element Plus
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+</body>
+</html>

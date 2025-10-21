@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>单设备备份 - Cisco设备配置备份系统</title>
+    
+    <!-- Element Plus CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    
+    <!-- 自定义样式 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #2c3e50;
+        }
+        
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0 25px 25px 0;
+            margin-right: 20px;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .backup-form {
+            max-width: 600px;
+        }
+        
+        .backup-progress {
+            margin-top: 20px;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #409eff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .main-content {
+                padding: 12px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- 侧边栏 -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <i class="el-icon-monitor"></i>
+                    Cisco备份系统
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="/" class="nav-link">
+                        <i class="el-icon-house"></i>
+                        首页
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/devices" class="nav-link">
+                        <i class="el-icon-server"></i>
+                        设备管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/backup/single" class="nav-link active">
+                        <i class="el-icon-document-copy"></i>
+                        单设备备份
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/backup/batch" class="nav-link">
+                        <i class="el-icon-files"></i>
+                        批量备份
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/history" class="nav-link">
+                        <i class="el-icon-time"></i>
+                        备份历史
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/compare" class="nav-link">
+                        <i class="el-icon-data-analysis"></i>
+                        配置对比
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/logs" class="nav-link">
+                        <i class="el-icon-document"></i>
+                        系统日志
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="/settings" class="nav-link">
+                        <i class="el-icon-setting"></i>
+                        系统设置
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 页面头部 -->
+            <div class="page-header">
+                <div class="page-title">
+                    <i class="el-icon-document-copy"></i>
+                    单设备备份
+                </div>
+                <div class="page-actions">
+                    <el-button @click="refreshDevices">
+                        <i class="el-icon-refresh"></i>
+                        刷新设备
+                    </el-button>
+                </div>
+            </div>
+
+            <!-- 备份配置 -->
+            <div class="content-card">
+                <div class="card-header">
+                    <i class="el-icon-setting"></i>
+                    备份配置
+                </div>
+                <div class="card-body">
+                    <el-form :model="backupForm" :rules="formRules" ref="backupFormRef" label-width="120px" class="backup-form">
+                        <el-form-item label="选择设备" prop="device_id">
+                            <el-select v-model="backupForm.device_id" placeholder="请选择设备" style="width: 100%" @change="handleDeviceChange">
+                                <el-option
+                                    v-for="device in devices"
+                                    :key="device.id"
+                                    :label="`${device.alias || device.ip_address} (${device.ip_address})`"
+                                    :value="device.id"
+                                />
+                            </el-select>
+                        </el-form-item>
+                        
+                        <el-form-item label="备份命令" prop="backup_command">
+                            <el-input v-model="backupForm.backup_command" placeholder="请输入备份命令" />
+                            <div class="form-tip">默认: show running-config</div>
+                        </el-form-item>
+                        
+                        <el-form-item label="任务类型">
+                            <el-radio-group v-model="backupForm.task_type">
+                                <el-radio label="manual">手动备份</el-radio>
+                                <el-radio label="scheduled">定时备份</el-radio>
+                            </el-radio-group>
+                        </el-form-item>
+                        
+                        <el-form-item v-if="backupForm.task_type === 'scheduled'" label="定时设置">
+                            <el-input v-model="backupForm.cron_expression" placeholder="请输入CRON表达式，如: 0 2 * * *">
+                                <template #prepend>CRON</template>
+                            </el-input>
+                            <div class="form-tip">示例: 0 2 * * * (每天凌晨2点)</div>
+                        </el-form-item>
+                        
+                        <el-form-item label="重试次数">
+                            <el-input-number v-model="backupForm.max_retries" :min="0" :max="5" />
+                            <div class="form-tip">备份失败时的重试次数</div>
+                        </el-form-item>
+                        
+                        <el-form-item>
+                            <el-button type="primary" @click="executeBackup" :loading="backupLoading" :disabled="!backupForm.device_id">
+                                <i class="el-icon-play"></i>
+                                开始备份
+                            </el-button>
+                            <el-button @click="resetForm">
+                                <i class="el-icon-refresh-left"></i>
+                                重置
+                            </el-button>
+                        </el-form-item>
+                    </el-form>
+                </div>
+            </div>
+
+            <!-- 备份进度 -->
+            <div v-if="backupProgress.visible" class="content-card backup-progress">
+                <div class="card-header">
+                    <i class="el-icon-loading"></i>
+                    备份进度
+                </div>
+                <div class="card-body">
+                    <div class="progress-info">
+                        <span>设备: {{ backupProgress.device }}</span>
+                        <span>状态: {{ backupProgress.status }}</span>
+                    </div>
+                    <el-progress :percentage="backupProgress.percentage" :status="backupProgress.status === '完成' ? 'success' : 'active'"></el-progress>
+                    <div v-if="backupProgress.message" style="margin-top: 10px; color: #666;">
+                        {{ backupProgress.message }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- 最近备份记录 -->
+            <div class="content-card">
+                <div class="card-header">
+                    <i class="el-icon-time"></i>
+                    最近备份记录
+                </div>
+                <div class="card-body">
+                    <el-table :data="recentTasks" style="width: 100%" v-loading="loadingTasks">
+                        <el-table-column prop="device_alias" label="设备" width="120">
+                            <template #default="scope">
+                                {{ scope.row.device_alias || scope.row.device_ip }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="status" label="状态" width="100">
+                            <template #default="scope">
+                                <el-tag :type="getStatusType(scope.row.status)">
+                                    {{ getStatusText(scope.row.status) }}
+                                </el-tag>
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="created_at" label="创建时间" width="160">
+                            <template #default="scope">
+                                {{ formatTime(scope.row.created_at) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column prop="file_size" label="文件大小" width="100">
+                            <template #default="scope">
+                                {{ formatFileSize(scope.row.file_size) }}
+                            </template>
+                        </el-table-column>
+                        <el-table-column label="操作" width="120">
+                            <template #default="scope">
+                                <el-button size="small" @click="viewTask(scope.row)">
+                                    <i class="el-icon-view"></i>
+                                    查看
+                                </el-button>
+                            </template>
+                        </el-table-column>
+                    </el-table>
+                </div>
+            </div>
+
+            <!-- 加载遮罩 -->
+            <div v-if="loadingVisible" class="loading-overlay">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <p>正在执行备份，请稍候...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Element Plus CDN -->
+    <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
+    <!-- Day.js CDN -->
+    <script src="https://unpkg.com/dayjs@1.11.10/dayjs.min.js"></script>
+
+    <script>
+        const { createApp, ref, reactive, computed, onMounted } = Vue;
+        const { ElMessage } = ElementPlus;
+
+        const app = createApp({
+            setup() {
+                // 响应式数据
+                const devices = ref([]);
+                const recentTasks = ref([]);
+                const loadingTasks = ref(false);
+                const backupLoading = ref(false);
+                const loadingVisible = ref(false);
+
+                const backupForm = reactive({
+                    device_id: '',
+                    backup_command: 'show running-config',
+                    task_type: 'manual',
+                    cron_expression: '0 2 * * *',
+                    max_retries: 3
+                });
+
+                const backupProgress = reactive({
+                    visible: false,
+                    device: '',
+                    status: '',
+                    percentage: 0,
+                    message: ''
+                });
+
+                const formRules = {
+                    device_id: [
+                        { required: true, message: '请选择设备', trigger: 'change' }
+                    ],
+                    backup_command: [
+                        { required: true, message: '请输入备份命令', trigger: 'blur' }
+                    ]
+                };
+
+                // 方法
+                const formatTime = (time) => {
+                    return dayjs(time).format('YYYY-MM-DD HH:mm:ss');
+                };
+
+                const formatFileSize = (size) => {
+                    if (!size) return '0 B';
+                    if (size < 1024) return `${size} B`;
+                    if (size < 1024 * 1024) return `${(size / 1024).toFixed(1)} KB`;
+                    return `${(size / (1024 * 1024)).toFixed(1)} MB`;
+                };
+
+                const getStatusType = (status) => {
+                    const statusMap = {
+                        'success': 'success',
+                        'failed': 'danger',
+                        'running': 'warning',
+                        'pending': 'info'
+                    };
+                    return statusMap[status] || 'info';
+                };
+
+                const getStatusText = (status) => {
+                    const statusMap = {
+                        'success': '成功',
+                        'failed': '失败',
+                        'running': '运行中',
+                        'pending': '等待中'
+                    };
+                    return statusMap[status] || status;
+                };
+
+                const loadDevices = async () => {
+                    try {
+                        const response = await fetch('/api/device/list');
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            devices.value = data.devices.filter(device => device.is_active);
+                        } else {
+                            ElMessage.error('加载设备列表失败: ' + data.error);
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    }
+                };
+
+                const loadRecentTasks = async () => {
+                    loadingTasks.value = true;
+                    try {
+                        const response = await fetch('/api/backup/recent');
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            recentTasks.value = data.tasks.slice(0, 10);
+                        } else {
+                            ElMessage.error('加载备份记录失败: ' + data.error);
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        loadingTasks.value = false;
+                    }
+                };
+
+                const handleDeviceChange = (deviceId) => {
+                    const device = devices.value.find(d => d.id === deviceId);
+                    if (device) {
+                        backupProgress.device = device.alias || device.ip_address;
+                    }
+                };
+
+                const executeBackup = async () => {
+                    if (!backupFormRef.value) return;
+                    
+                    await backupFormRef.value.validate(async (valid) => {
+                        if (valid) {
+                            backupLoading.value = true;
+                            loadingVisible.value = true;
+                            
+                            // 显示进度
+                            backupProgress.visible = true;
+                            backupProgress.status = '开始备份';
+                            backupProgress.percentage = 0;
+                            backupProgress.message = '正在连接设备...';
+                            
+                            try {
+                                const response = await fetch('/api/backup/execute', {
+                                    method: 'POST',
+                                    headers: {
+                                        'Content-Type': 'application/json'
+                                    },
+                                    body: JSON.stringify(backupForm)
+                                });
+                                
+                                const data = await response.json();
+                                
+                                if (data.success) {
+                                    backupProgress.status = '备份完成';
+                                    backupProgress.percentage = 100;
+                                    backupProgress.message = '备份任务已创建';
+                                    ElMessage.success('备份任务已创建');
+                                    
+                                    // 刷新备份记录
+                                    setTimeout(() => {
+                                        loadRecentTasks();
+                                    }, 1000);
+                                } else {
+                                    backupProgress.status = '备份失败';
+                                    backupProgress.message = data.error;
+                                    ElMessage.error('备份失败: ' + data.error);
+                                }
+                            } catch (error) {
+                                backupProgress.status = '备份失败';
+                                backupProgress.message = '网络错误';
+                                ElMessage.error('网络错误，请稍后重试');
+                            } finally {
+                                backupLoading.value = false;
+                                loadingVisible.value = false;
+                                
+                                // 3秒后隐藏进度
+                                setTimeout(() => {
+                                    backupProgress.visible = false;
+                                }, 3000);
+                            }
+                        }
+                    });
+                };
+
+                const resetForm = () => {
+                    Object.assign(backupForm, {
+                        device_id: '',
+                        backup_command: 'show running-config',
+                        task_type: 'manual',
+                        cron_expression: '0 2 * * *',
+                        max_retries: 3
+                    });
+                    backupProgress.visible = false;
+                };
+
+                const refreshDevices = () => {
+                    loadDevices();
+                };
+
+                const viewTask = (task) => {
+                    ElMessage.info('查看任务详情功能开发中...');
+                };
+
+                // 组件挂载时加载数据
+                onMounted(() => {
+                    loadDevices();
+                    loadRecentTasks();
+                });
+
+                return {
+                    devices,
+                    recentTasks,
+                    loadingTasks,
+                    backupLoading,
+                    loadingVisible,
+                    backupForm,
+                    backupProgress,
+                    formRules,
+                    formatTime,
+                    formatFileSize,
+                    getStatusType,
+                    getStatusText,
+                    handleDeviceChange,
+                    executeBackup,
+                    resetForm,
+                    refreshDevices,
+                    viewTask
+                };
+            }
+        });
+
+        // 使用Element Plus
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+</body>
+</html>
