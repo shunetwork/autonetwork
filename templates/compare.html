@@ -25,6 +25,26 @@ if ('caches' in window) {
         console.log('已清除所有缓存');
     });
 }
+
+// 强制重新加载CSS和JS
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM加载完成，强制刷新资源...');
+    // 重新加载CSS
+    const links = document.querySelectorAll('link[rel="stylesheet"]');
+    links.forEach(link => {
+        const href = link.href;
+        link.href = href + '?v=' + new Date().getTime();
+    });
+    
+    // 重新加载JS
+    const scripts = document.querySelectorAll('script[src]');
+    scripts.forEach(script => {
+        const src = script.src;
+        if (src && !src.includes('?')) {
+            script.src = src + '?v=' + new Date().getTime();
+        }
+    });
+});
 </script>
 {% endblock %}
 
@@ -214,6 +234,10 @@ $(document).ready(function() {
         }
     });
     
+    // 强制显示设备选择部分
+    console.log('强制显示设备选择部分...');
+    $('#deviceSelect').closest('.row').show();
+    
     // 加载设备和备份任务
     console.log('开始加载设备...');
     loadDevices();
@@ -319,6 +343,9 @@ $(document).ready(function() {
 
 function loadDevices() {
     console.log('开始加载设备列表...');
+    console.log('设备选择元素存在:', $('#deviceSelect').length > 0);
+    console.log('设备选择元素可见:', $('#deviceSelect').is(':visible'));
+    
     fetch('/api/device/list')
     .then(response => response.json())
     .then(data => {
@@ -328,6 +355,10 @@ function loadDevices() {
             console.log('活跃设备数量:', devices.length);
             const deviceSelect = $('#deviceSelect');
             
+            // 确保设备选择元素可见
+            deviceSelect.closest('.row').show();
+            deviceSelect.show();
+            
             deviceSelect.empty().append('<option value="">请选择设备...</option>');
             
             devices.forEach(device => {
@@ -335,7 +366,7 @@ function loadDevices() {
                 const option = `<option value="${device.id}">${deviceName} (${device.ip_address})</option>`;
                 deviceSelect.append(option);
             });
-            console.log('设备加载完成');
+            console.log('设备加载完成，设备选择元素现在可见:', deviceSelect.is(':visible'));
         } else {
             console.error('设备API返回失败:', data);
         }
