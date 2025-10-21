@@ -100,57 +100,44 @@ executor = ThreadPoolExecutor(max_workers=app.config['MAX_CONCURRENT_BACKUPS'])
 @app.route('/')
 @login_required
 def index():
-    """主页 - 显示设备列表和最近备份任务"""
-    devices = Device.query.all()
-    recent_tasks = BackupTask.query.order_by(BackupTask.created_at.desc()).limit(10).all()
-    return render_template('index.html', devices=devices, recent_tasks=recent_tasks)
+    """首页 - Vue 3前端"""
+    return send_from_directory('static', 'index.html')
 
 @app.route('/backup/single')
 @login_required
 def backup_single():
-    """单设备备份页面"""
-    devices = Device.query.all()
-    return render_template('backup_single.html', devices=devices)
+    """单设备备份页面 - Vue 3前端"""
+    return send_from_directory('static', 'index.html')
 
 @app.route('/backup/batch')
 @login_required
 def backup_batch():
-    """批量备份页面"""
-    return render_template('backup_batch.html')
+    """批量备份页面 - Vue 3前端"""
+    return send_from_directory('static', 'index.html')
 
 @app.route('/history')
 @login_required
 def history():
-    """备份历史页面"""
-    page = request.args.get('page', 1, type=int)
-    tasks = BackupTask.query.order_by(BackupTask.created_at.desc()).paginate(
-        page=page, per_page=20, error_out=False
-    )
-    return render_template('history.html', tasks=tasks)
+    """备份历史页面 - Vue 3前端"""
+    return send_from_directory('static', 'index.html')
 
 @app.route('/devices')
 @login_required
 def devices():
-    """设备管理页面"""
-    devices = Device.query.all()
-    return render_template('devices.html', devices=devices)
+    """设备管理页面 - Vue 3前端"""
+    return send_from_directory('static', 'index.html')
 
 @app.route('/settings')
 @login_required
 def settings():
-    """系统设置页面"""
-    return render_template('settings.html')
+    """系统设置页面 - Vue 3前端"""
+    return send_from_directory('static', 'index.html')
 
 @app.route('/logs')
 @login_required
 def logs():
-    """日志查看页面"""
-    log_files = []
-    logs_dir = Path('logs')
-    if logs_dir.exists():
-        log_files = [f.name for f in logs_dir.iterdir() if f.is_file() and f.suffix == '.log']
-    
-    return render_template('logs.html', log_files=log_files)
+    """日志查看页面 - Vue 3前端"""
+    return send_from_directory('static', 'index.html')
 
 @app.route('/compare')
 @login_required

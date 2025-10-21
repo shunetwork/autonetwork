@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cisco设备配置备份系统</title>
+    
+    <!-- Element Plus CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/element-plus/dist/index.css">
+    
+    <!-- 自定义样式 -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #2c3e50;
+        }
+        
+        .app-container {
+            min-height: 100vh;
+            display: flex;
+        }
+        
+        .sidebar {
+            width: 250px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 0;
+            box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .sidebar-header {
+            padding: 0 20px 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            margin-bottom: 20px;
+        }
+        
+        .sidebar-title {
+            font-size: 20px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .nav-menu {
+            list-style: none;
+        }
+        
+        .nav-item {
+            margin-bottom: 5px;
+        }
+        
+        .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: rgba(255, 255, 255, 0.8);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0 25px 25px 0;
+            margin-right: 20px;
+        }
+        
+        .nav-link:hover,
+        .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .nav-link i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        .main-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .page-header {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .page-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .page-actions {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .card-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #2c3e50;
+        }
+        
+        .card-body {
+            padding: 24px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 24px;
+            border-radius: 12px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+        
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .feature-icon {
+            font-size: 48px;
+            color: #667eea;
+            margin-bottom: 16px;
+        }
+        
+        .feature-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            color: #2c3e50;
+        }
+        
+        .feature-desc {
+            color: #6c757d;
+            line-height: 1.5;
+        }
+        
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+        
+        .loading-content {
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+        }
+        
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #409eff;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        @media (max-width: 768px) {
+            .app-container {
+                flex-direction: column;
+            }
+            
+            .sidebar {
+                width: 100%;
+                height: auto;
+            }
+            
+            .main-content {
+                padding: 12px;
+            }
+            
+            .page-header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <!-- 侧边栏 -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-title">
+                    <i class="el-icon-monitor"></i>
+                    Cisco备份系统
+                </div>
+            </div>
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" :class="{ active: currentPage === 'home' }" @click="navigateTo('home')">
+                        <i class="el-icon-house"></i>
+                        首页
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" :class="{ active: currentPage === 'devices' }" @click="navigateTo('devices')">
+                        <i class="el-icon-server"></i>
+                        设备管理
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" :class="{ active: currentPage === 'single-backup' }" @click="navigateTo('single-backup')">
+                        <i class="el-icon-document-copy"></i>
+                        单设备备份
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" :class="{ active: currentPage === 'batch-backup' }" @click="navigateTo('batch-backup')">
+                        <i class="el-icon-files"></i>
+                        批量备份
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" :class="{ active: currentPage === 'history' }" @click="navigateTo('history')">
+                        <i class="el-icon-time"></i>
+                        备份历史
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" :class="{ active: currentPage === 'compare' }" @click="navigateTo('compare')">
+                        <i class="el-icon-data-analysis"></i>
+                        配置对比
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" :class="{ active: currentPage === 'logs' }" @click="navigateTo('logs')">
+                        <i class="el-icon-document"></i>
+                        系统日志
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" :class="{ active: currentPage === 'settings' }" @click="navigateTo('settings')">
+                        <i class="el-icon-setting"></i>
+                        系统设置
+                    </a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- 主内容区 -->
+        <main class="main-content">
+            <!-- 首页 -->
+            <div v-if="currentPage === 'home'">
+                <div class="page-header">
+                    <div class="page-title">
+                        <i class="el-icon-house"></i>
+                        系统概览
+                    </div>
+                    <div class="page-actions">
+                        <el-button type="primary" @click="refreshData">
+                            <i class="el-icon-refresh"></i>
+                            刷新数据
+                        </el-button>
+                    </div>
+                </div>
+
+                <!-- 统计卡片 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">{{ statistics.deviceCount || 0 }}</div>
+                        <div class="stat-label">设备总数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ statistics.backupCount || 0 }}</div>
+                        <div class="stat-label">备份总数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ statistics.successCount || 0 }}</div>
+                        <div class="stat-label">成功备份</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value">{{ statistics.failedCount || 0 }}</div>
+                        <div class="stat-label">失败备份</div>
+                    </div>
+                </div>
+
+                <!-- 功能卡片 -->
+                <div class="feature-grid">
+                    <div class="feature-card" @click="navigateTo('devices')">
+                        <div class="feature-icon">
+                            <i class="el-icon-server"></i>
+                        </div>
+                        <div class="feature-title">设备管理</div>
+                        <div class="feature-desc">管理Cisco网络设备，支持SSH和Telnet连接</div>
+                    </div>
+                    <div class="feature-card" @click="navigateTo('single-backup')">
+                        <div class="feature-icon">
+                            <i class="el-icon-document-copy"></i>
+                        </div>
+                        <div class="feature-title">单设备备份</div>
+                        <div class="feature-desc">对单个设备执行配置备份</div>
+                    </div>
+                    <div class="feature-card" @click="navigateTo('batch-backup')">
+                        <div class="feature-icon">
+                            <i class="el-icon-files"></i>
+                        </div>
+                        <div class="feature-title">批量备份</div>
+                        <div class="feature-desc">对多个设备执行批量备份</div>
+                    </div>
+                    <div class="feature-card" @click="navigateTo('compare')">
+                        <div class="feature-icon">
+                            <i class="el-icon-data-analysis"></i>
+                        </div>
+                        <div class="feature-title">配置对比</div>
+                        <div class="feature-desc">智能对比配置文件差异</div>
+                    </div>
+                    <div class="feature-card" @click="navigateTo('history')">
+                        <div class="feature-icon">
+                            <i class="el-icon-time"></i>
+                        </div>
+                        <div class="feature-title">备份历史</div>
+                        <div class="feature-desc">查看所有备份记录和状态</div>
+                    </div>
+                    <div class="feature-card" @click="navigateTo('logs')">
+                        <div class="feature-icon">
+                            <i class="el-icon-document"></i>
+                        </div>
+                        <div class="feature-title">系统日志</div>
+                        <div class="feature-desc">查看系统运行日志和错误信息</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 其他页面内容将在这里动态加载 -->
+            <div v-if="currentPage !== 'home'">
+                <div class="page-header">
+                    <div class="page-title">
+                        <i :class="getPageIcon()"></i>
+                        {{ getPageTitle() }}
+                    </div>
+                </div>
+                <div class="content-card">
+                    <div class="card-body">
+                        <p>页面内容正在加载中...</p>
+                        <el-button type="primary" @click="navigateTo('home')">返回首页</el-button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 加载遮罩 -->
+            <div v-if="loadingVisible" class="loading-overlay">
+                <div class="loading-content">
+                    <div class="spinner"></div>
+                    <p>正在加载数据，请稍候...</p>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Vue 3 CDN -->
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <!-- Element Plus CDN -->
+    <script src="https://unpkg.com/element-plus/dist/index.full.js"></script>
+    <!-- Day.js CDN -->
+    <script src="https://unpkg.com/dayjs@1.11.10/dayjs.min.js"></script>
+
+    <script>
+        const { createApp, ref, reactive, computed, onMounted } = Vue;
+        const { ElMessage } = ElementPlus;
+
+        const app = createApp({
+            setup() {
+                // 响应式数据
+                const currentPage = ref('home');
+                const loadingVisible = ref(false);
+                const statistics = ref({
+                    deviceCount: 0,
+                    backupCount: 0,
+                    successCount: 0,
+                    failedCount: 0
+                });
+
+                // 页面配置
+                const pageConfig = {
+                    'home': { title: '系统概览', icon: 'el-icon-house' },
+                    'devices': { title: '设备管理', icon: 'el-icon-server' },
+                    'single-backup': { title: '单设备备份', icon: 'el-icon-document-copy' },
+                    'batch-backup': { title: '批量备份', icon: 'el-icon-files' },
+                    'history': { title: '备份历史', icon: 'el-icon-time' },
+                    'compare': { title: '配置对比', icon: 'el-icon-data-analysis' },
+                    'logs': { title: '系统日志', icon: 'el-icon-document' },
+                    'settings': { title: '系统设置', icon: 'el-icon-setting' }
+                };
+
+                // 方法
+                const navigateTo = (page) => {
+                    currentPage.value = page;
+                    
+                    // 如果是配置对比页面，跳转到专门的页面
+                    if (page === 'compare') {
+                        window.location.href = '/compare';
+                        return;
+                    }
+                    
+                    // 其他页面暂时显示占位内容
+                    ElMessage.info(`正在开发 ${pageConfig[page].title} 页面`);
+                };
+
+                const getPageTitle = () => {
+                    return pageConfig[currentPage.value]?.title || '未知页面';
+                };
+
+                const getPageIcon = () => {
+                    return pageConfig[currentPage.value]?.icon || 'el-icon-question';
+                };
+
+                const refreshData = async () => {
+                    loadingVisible.value = true;
+                    try {
+                        // 加载统计数据
+                        const response = await fetch('/api/statistics');
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            statistics.value = data.statistics;
+                            ElMessage.success('数据刷新成功');
+                        } else {
+                            ElMessage.error('数据加载失败: ' + data.error);
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        loadingVisible.value = false;
+                    }
+                };
+
+                // 组件挂载时加载数据
+                onMounted(() => {
+                    refreshData();
+                });
+
+                return {
+                    currentPage,
+                    loadingVisible,
+                    statistics,
+                    navigateTo,
+                    getPageTitle,
+                    getPageIcon,
+                    refreshData
+                };
+            }
+        });
+
+        // 使用Element Plus
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+</body>
+</html>
