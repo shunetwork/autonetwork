@@ -1,0 +1,407 @@
+{% extends "base.html" %}
+
+{% block title %}备份历史 - Cisco设备配置备份系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">备份历史</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button class="btn btn-sm btn-outline-danger" id="deleteSelectedBtn" disabled>
+                <i class="fas fa-trash"></i> 删除选中
+            </button>
+            <button class="btn btn-sm btn-outline-info" id="refreshBtn">
+                <i class="fas fa-refresh"></i> 刷新
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- 筛选器 -->
+<div class="card shadow mb-4">
+    <div class="card-body">
+        <form id="filterForm" class="row g-3">
+            <div class="col-md-3">
+                <label for="statusFilter" class="form-label">状态</label>
+                <select class="form-select" id="statusFilter" name="status">
+                    <option value="">全部状态</option>
+                    <option value="success">成功</option>
+                    <option value="failed">失败</option>
+                    <option value="running">进行中</option>
+                    <option value="pending">等待中</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="deviceFilter" class="form-label">设备</label>
+                <select class="form-select" id="deviceFilter" name="device_id">
+                    <option value="">全部设备</option>
+                    <!-- 设备选项将通过JavaScript动态加载 -->
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="dateFrom" class="form-label">开始日期</label>
+                <input type="date" class="form-control" id="dateFrom" name="date_from">
+            </div>
+            <div class="col-md-3">
+                <label for="dateTo" class="form-label">结束日期</label>
+                <input type="date" class="form-control" id="dateTo" name="date_to">
+            </div>
+            <div class="col-12">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-search"></i> 筛选
+                </button>
+                <button type="button" class="btn btn-outline-secondary" id="clearFilterBtn">
+                    <i class="fas fa-times"></i> 清除筛选
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 备份历史表格 -->
+<div class="card shadow">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-history"></i> 备份记录
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover" id="historyTable">
+                <thead>
+                    <tr>
+                        <th>
+                            <input type="checkbox" id="selectAllCheckbox">
+                        </th>
+                        <th>任务ID</th>
+                        <th>设备</th>
+                        <th>用户</th>
+                        <th>状态</th>
+                        <th>备份命令</th>
+                        <th>文件大小</th>
+                        <th>开始时间</th>
+                        <th>完成时间</th>
+                        <th>耗时</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody id="historyTableBody">
+                    {% for task in tasks.items %}
+                    <tr data-task-id="{{ task.id }}">
+                        <td>
+                            <input type="checkbox" class="task-checkbox" value="{{ task.id }}">
+                        </td>
+                        <td>{{ task.id }}</td>
+                        <td>
+                            <div class="fw-bold">{{ task.device.alias or task.device.ip_address }}</div>
+                            <small class="text-muted">{{ task.device.ip_address }}</small>
+                        </td>
+                        <td>{{ task.user.username }}</td>
+                        <td>
+                            {% if task.status == 'success' %}
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check"></i> 成功
+                                </span>
+                            {% elif task.status == 'failed' %}
+                                <span class="badge bg-danger">
+                                    <i class="fas fa-times"></i> 失败
+                                </span>
+                            {% elif task.status == 'running' %}
+                                <span class="badge bg-warning">
+                                    <i class="fas fa-spinner fa-spin"></i> 进行中
+                                </span>
+                            {% else %}
+                                <span class="badge bg-secondary">
+                                    <i class="fas fa-clock"></i> 等待中
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <code class="small">{{ task.backup_command }}</code>
+                        </td>
+                        <td>
+                            {% if task.file_size %}
+                                {{ "%.2f"|format(task.file_size / 1024) }} KB
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if task.started_at %}
+                                {{ task.started_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if task.completed_at %}
+                                {{ task.completed_at.strftime('%Y-%m-%d %H:%M:%S') }}
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if task.get_duration() %}
+                                {{ "%.1f"|format(task.get_duration()) }}s
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                {% if task.status == 'success' and task.file_path %}
+                                    <button class="btn btn-outline-primary" onclick="downloadBackup({{ task.id }})" title="下载备份">
+                                        <i class="fas fa-download"></i>
+                                    </button>
+                                    <button class="btn btn-outline-success" onclick="compareBackup({{ task.id }})" title="配置对比">
+                                        <i class="fas fa-code-branch"></i>
+                                    </button>
+                                {% endif %}
+                                <button class="btn btn-outline-info" onclick="viewLogs({{ task.id }})" title="查看日志">
+                                    <i class="fas fa-file-alt"></i>
+                                </button>
+                                {% if task.status in ['failed', 'success'] %}
+                                    <button class="btn btn-outline-danger" onclick="deleteTask({{ task.id }})" title="删除任务">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- 分页 -->
+        {% if tasks.pages > 1 %}
+        <nav aria-label="备份历史分页">
+            <ul class="pagination justify-content-center">
+                {% if tasks.has_prev %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('history', page=tasks.prev_num) }}">上一页</a>
+                    </li>
+                {% endif %}
+                
+                {% for page_num in tasks.iter_pages() %}
+                    {% if page_num %}
+                        {% if page_num != tasks.page %}
+                            <li class="page-item">
+                                <a class="page-link" href="{{ url_for('history', page=page_num) }}">{{ page_num }}</a>
+                            </li>
+                        {% else %}
+                            <li class="page-item active">
+                                <span class="page-link">{{ page_num }}</span>
+                            </li>
+                        {% endif %}
+                    {% else %}
+                        <li class="page-item disabled">
+                            <span class="page-link">...</span>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                
+                {% if tasks.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="{{ url_for('history', page=tasks.next_num) }}">下一页</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 日志查看模态框 -->
+<div class="modal fade" id="logsModal" tabindex="-1" aria-labelledby="logsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="logsModalLabel">
+                    <i class="fas fa-file-alt"></i> 任务日志
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="log-container" id="taskLogs">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> 加载中...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 加载设备列表
+    loadDeviceList();
+    
+    // 全选/取消全选
+    $('#selectAllCheckbox').change(function() {
+        const isChecked = $(this).is(':checked');
+        $('.task-checkbox').prop('checked', isChecked);
+        updateDeleteButton();
+    });
+    
+    // 任务选择变化
+    $(document).on('change', '.task-checkbox', function() {
+        updateDeleteButton();
+    });
+    
+    // 删除选中任务
+    $('#deleteSelectedBtn').click(function() {
+        const selectedTasks = $('.task-checkbox:checked').map(function() {
+            return $(this).val();
+        }).get();
+        
+        if (selectedTasks.length === 0) {
+            alert('请选择要删除的任务');
+            return;
+        }
+        
+        if (confirm(`确定要删除选中的 ${selectedTasks.length} 个任务吗？`)) {
+            deleteSelectedTasks(selectedTasks);
+        }
+    });
+    
+    // 刷新页面
+    $('#refreshBtn').click(function() {
+        location.reload();
+    });
+    
+    // 清除筛选
+    $('#clearFilterBtn').click(function() {
+        $('#filterForm')[0].reset();
+        location.href = "{{ url_for('history') }}";
+    });
+    
+    // 筛选表单提交
+    $('#filterForm').submit(function(e) {
+        e.preventDefault();
+        const formData = new FormData(this);
+        const params = new URLSearchParams();
+        
+        for (let [key, value] of formData.entries()) {
+            if (value) params.append(key, value);
+        }
+        
+        location.href = "{{ url_for('history') }}?" + params.toString();
+    });
+});
+
+function loadDeviceList() {
+    fetch('/api/device/list')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const select = $('#deviceFilter');
+            data.devices.forEach(device => {
+                select.append(`<option value="${device.id}">${device.alias || device.ip_address}</option>`);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error loading devices:', error);
+    });
+}
+
+function updateDeleteButton() {
+    const selectedCount = $('.task-checkbox:checked').length;
+    $('#deleteSelectedBtn').prop('disabled', selectedCount === 0);
+    if (selectedCount > 0) {
+        $('#deleteSelectedBtn').text(`删除选中 (${selectedCount})`);
+    } else {
+        $('#deleteSelectedBtn').text('删除选中');
+    }
+}
+
+function downloadBackup(taskId) {
+    window.open(`/api/backup/download/${taskId}`, '_blank');
+}
+
+function compareBackup(taskId) {
+    // 跳转到配置对比页面，并传递任务ID
+    window.location.href = `/compare?task1=${taskId}`;
+}
+
+function viewLogs(taskId) {
+    $('#logsModal').modal('show');
+    $('#taskLogs').html('<div class="text-center text-muted"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>');
+    
+    fetch(`/api/backup/progress/${taskId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.logs) {
+            const logsHtml = data.logs.map(log => `
+                <div class="mb-2">
+                    <span class="badge bg-${log.level === 'error' ? 'danger' : log.level === 'warning' ? 'warning' : 'info'}">
+                        ${log.level.toUpperCase()}
+                    </span>
+                    <span class="text-muted">[${new Date(log.timestamp).toLocaleString()}]</span>
+                    <div class="mt-1">${log.message}</div>
+                </div>
+            `).join('');
+            $('#taskLogs').html(logsHtml);
+        } else {
+            $('#taskLogs').html('<div class="text-center text-muted">暂无日志记录</div>');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading logs:', error);
+        $('#taskLogs').html('<div class="text-center text-danger">加载日志失败</div>');
+    });
+}
+
+function deleteTask(taskId) {
+    if (confirm('确定要删除这个备份任务吗？')) {
+        fetch(`/api/backup/delete/${taskId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('删除成功');
+                location.reload();
+            } else {
+                alert('删除失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('删除请求失败，请稍后重试');
+        });
+    }
+}
+
+function deleteSelectedTasks(taskIds) {
+    const promises = taskIds.map(taskId => 
+        fetch(`/api/backup/delete/${taskId}`, { method: 'DELETE' })
+        .then(response => response.json())
+    );
+    
+    Promise.all(promises)
+    .then(results => {
+        const successCount = results.filter(result => result.success).length;
+        const failCount = results.length - successCount;
+        
+        if (failCount === 0) {
+            alert(`成功删除 ${successCount} 个任务`);
+        } else {
+            alert(`删除完成：成功 ${successCount} 个，失败 ${failCount} 个`);
+        }
+        location.reload();
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('批量删除失败，请稍后重试');
+    });
+}
+</script>
+{% endblock %}

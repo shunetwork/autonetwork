@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}系统设置 - Cisco设备配置备份系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">系统设置</h1>
+</div>
+
+<div class="row">
+    <!-- 系统配置 -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-cog"></i> 系统配置
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="systemConfigForm">
+                    <div class="mb-3">
+                        <label for="maxConcurrentBackups" class="form-label">最大并发备份数</label>
+                        <input type="number" class="form-control" id="maxConcurrentBackups" 
+                               value="10" min="1" max="50">
+                        <div class="form-text">同时执行的最大备份任务数</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="backupTimeout" class="form-label">备份超时时间（秒）</label>
+                        <input type="number" class="form-control" id="backupTimeout" 
+                               value="300" min="60" max="1800">
+                        <div class="form-text">单个备份任务的最大执行时间</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="compressBackups" checked>
+                            <label class="form-check-label" for="compressBackups">
+                                压缩备份文件
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="enableDiff">
+                            <label class="form-check-label" for="enableDiff">
+                                启用配置差异比较
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> 保存配置
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 计划任务 -->
+    <div class="col-lg-6">
+        <div class="card shadow mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-clock"></i> 计划任务
+                </h5>
+                <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addScheduleModal">
+                    <i class="fas fa-plus"></i> 添加计划
+                </button>
+            </div>
+            <div class="card-body">
+                <div id="scheduleList">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> 加载中...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 系统统计 -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-chart-bar"></i> 系统统计
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row" id="statisticsCards">
+                    <div class="col-md-3">
+                        <div class="card border-left-primary">
+                            <div class="card-body">
+                                <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">总设备数</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalDevices">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-left-success">
+                            <div class="card-body">
+                                <div class="text-xs font-weight-bold text-success text-uppercase mb-1">活跃设备</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="activeDevices">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-left-info">
+                            <div class="card-body">
+                                <div class="text-xs font-weight-bold text-info text-uppercase mb-1">总备份数</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="totalBackups">-</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card border-left-warning">
+                            <div class="card-body">
+                                <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">成功率</div>
+                                <div class="h5 mb-0 font-weight-bold text-gray-800" id="successRate">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 添加计划任务模态框 -->
+<div class="modal fade" id="addScheduleModal" tabindex="-1" aria-labelledby="addScheduleModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addScheduleModalLabel">
+                    <i class="fas fa-plus"></i> 添加计划任务
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addScheduleForm">
+                    <div class="mb-3">
+                        <label for="scheduleName" class="form-label">计划名称</label>
+                        <input type="text" class="form-control" id="scheduleName" name="name" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scheduleDescription" class="form-label">描述</label>
+                        <textarea class="form-control" id="scheduleDescription" name="description" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="cronExpression" class="form-label">CRON表达式</label>
+                        <input type="text" class="form-control" id="cronExpression" name="cron_expression" 
+                               placeholder="0 2 * * *" required>
+                        <div class="form-text">格式：分 时 日 月 周（例如：0 2 * * * 表示每天凌晨2点）</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scheduleDevices" class="form-label">选择设备</label>
+                        <select class="form-select" id="scheduleDevices" name="device_ids" multiple required>
+                            <!-- 设备选项将通过JavaScript动态加载 -->
+                        </select>
+                        <div class="form-text">按住Ctrl键可多选设备</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="scheduleCommand" class="form-label">备份命令</label>
+                        <input type="text" class="form-control" id="scheduleCommand" name="backup_command" 
+                               value="show running-config">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-primary" id="saveScheduleBtn">
+                    <i class="fas fa-save"></i> 保存计划
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 加载统计数据
+    loadStatistics();
+    
+    // 加载计划任务
+    loadSchedules();
+    
+    // 加载设备列表
+    loadDevices();
+    
+    // 保存系统配置
+    $('#systemConfigForm').submit(function(e) {
+        e.preventDefault();
+        
+        const config = {
+            max_concurrent_backups: parseInt($('#maxConcurrentBackups').val()),
+            backup_timeout: parseInt($('#backupTimeout').val()),
+            compress_backups: $('#compressBackups').is(':checked'),
+            enable_diff: $('#enableDiff').is(':checked')
+        };
+        
+        // 这里应该调用保存配置的API
+        alert('配置保存功能待实现');
+    });
+    
+    // 保存计划任务
+    $('#saveScheduleBtn').click(function() {
+        const formData = {
+            name: $('#scheduleName').val(),
+            description: $('#scheduleDescription').val(),
+            cron_expression: $('#cronExpression').val(),
+            device_ids: Array.from($('#scheduleDevices').selectedOptions).map(option => parseInt(option.value)),
+            backup_command: $('#scheduleCommand').val()
+        };
+        
+        if (!formData.name || !formData.cron_expression || formData.device_ids.length === 0) {
+            alert('请填写必填字段');
+            return;
+        }
+        
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 保存中...');
+        
+        // 这里应该调用创建计划任务的API
+        setTimeout(() => {
+            alert('计划任务创建功能待实现');
+            $(this).prop('disabled', false).html('<i class="fas fa-save"></i> 保存计划');
+            $('#addScheduleModal').modal('hide');
+        }, 1000);
+    });
+});
+
+function loadStatistics() {
+    fetch('/api/statistics')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const stats = data.statistics;
+            $('#totalDevices').text(stats.total_devices || 0);
+            $('#activeDevices').text(stats.active_devices || 0);
+            $('#totalBackups').text(stats.total_tasks || 0);
+            $('#successRate').text((stats.success_rate || 0).toFixed(1) + '%');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading statistics:', error);
+    });
+}
+
+function loadSchedules() {
+    // 这里应该调用获取计划任务的API
+    $('#scheduleList').html(`
+        <div class="text-center text-muted">
+            <i class="fas fa-clock"></i><br>
+            计划任务功能待实现
+        </div>
+    `);
+}
+
+function loadDevices() {
+    fetch('/api/device/list')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const select = $('#scheduleDevices');
+            data.devices.forEach(device => {
+                select.append(`<option value="${device.id}">${device.alias || device.ip_address}</option>`);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error loading devices:', error);
+    });
+}
+</script>
+{% endblock %}
+
+

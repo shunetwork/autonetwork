@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}系统日志 - Cisco设备配置备份系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">系统日志</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button class="btn btn-sm btn-outline-info" id="refreshLogsBtn">
+            <i class="fas fa-refresh"></i> 刷新
+        </button>
+        <button class="btn btn-sm btn-outline-danger" id="clearLogsBtn">
+            <i class="fas fa-trash"></i> 清空日志
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 日志文件列表 -->
+    <div class="col-lg-3">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-file-alt"></i> 日志文件
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="list-group" id="logFileList">
+                    {% for log_file in log_files %}
+                    <a href="#" class="list-group-item list-group-item-action log-file-item" 
+                       data-file="{{ log_file }}" onclick="loadLogFile('{{ log_file }}')">
+                        <i class="fas fa-file-text"></i> {{ log_file }}
+                    </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 日志内容 -->
+    <div class="col-lg-9">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-terminal"></i> 日志内容
+                </h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-secondary" id="autoScrollBtn" title="自动滚动">
+                        <i class="fas fa-arrow-down"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" id="downloadLogBtn" title="下载日志">
+                        <i class="fas fa-download"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="log-container" id="logContent" style="height: 600px;">
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-file-alt fa-2x mb-3"></i>
+                        <p>请选择一个日志文件查看内容</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 实时日志模态框 -->
+<div class="modal fade" id="realtimeLogModal" tabindex="-1" aria-labelledby="realtimeLogModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="realtimeLogModalLabel">
+                    <i class="fas fa-stream"></i> 实时日志
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="log-container" id="realtimeLogContent" style="height: 500px;">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> 连接中...
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentLogFile = null;
+let autoScroll = true;
+let logInterval = null;
+
+$(document).ready(function() {
+    // 刷新日志
+    $('#refreshLogsBtn').click(function() {
+        location.reload();
+    });
+    
+    // 清空日志
+    $('#clearLogsBtn').click(function() {
+        if (confirm('确定要清空所有日志吗？此操作不可恢复！')) {
+            // 这里应该调用清空日志的API
+            alert('清空日志功能待实现');
+        }
+    });
+    
+    // 自动滚动切换
+    $('#autoScrollBtn').click(function() {
+        autoScroll = !autoScroll;
+        $(this).toggleClass('btn-secondary btn-primary');
+        if (autoScroll) {
+            $(this).html('<i class="fas fa-arrow-down"></i>');
+        } else {
+            $(this).html('<i class="fas fa-pause"></i>');
+        }
+    });
+    
+    // 下载日志
+    $('#downloadLogBtn').click(function() {
+        if (currentLogFile) {
+            window.open(`/api/logs/download/${currentLogFile}`, '_blank');
+        } else {
+            alert('请先选择一个日志文件');
+        }
+    });
+    
+    // 加载第一个日志文件
+    if ($('.log-file-item').length > 0) {
+        $('.log-file-item').first().click();
+    }
+});
+
+function loadLogFile(filename) {
+    currentLogFile = filename;
+    
+    // 更新选中状态
+    $('.log-file-item').removeClass('active');
+    $(`.log-file-item[data-file="${filename}"]`).addClass('active');
+    
+    // 显示加载状态
+    $('#logContent').html('<div class="text-center text-muted py-5"><i class="fas fa-spinner fa-spin"></i> 加载中...</div>');
+    
+    // 加载日志内容
+    fetch(`/api/logs/view/${filename}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            displayLogContent(data.content);
+        } else {
+            $('#logContent').html(`
+                <div class="text-center text-danger py-5">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                    <p>加载日志失败：${data.error}</p>
+                </div>
+            `);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading log:', error);
+        $('#logContent').html(`
+            <div class="text-center text-danger py-5">
+                <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                <p>加载日志失败，请稍后重试</p>
+            </div>
+        `);
+    });
+}
+
+function displayLogContent(content) {
+    const lines = content.split('\n');
+    const logHtml = lines.map(line => {
+        // 根据日志级别添加颜色
+        let className = '';
+        if (line.includes('ERROR') || line.includes('CRITICAL')) {
+            className = 'text-danger';
+        } else if (line.includes('WARNING') || line.includes('WARN')) {
+            className = 'text-warning';
+        } else if (line.includes('INFO')) {
+            className = 'text-info';
+        } else if (line.includes('DEBUG')) {
+            className = 'text-muted';
+        }
+        
+        return `<div class="log-line ${className}">${escapeHtml(line)}</div>`;
+    }).join('');
+    
+    $('#logContent').html(logHtml);
+    
+    // 自动滚动到底部
+    if (autoScroll) {
+        const logContainer = $('#logContent')[0];
+        logContainer.scrollTop = logContainer.scrollHeight;
+    }
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
+function startRealtimeLog() {
+    $('#realtimeLogModal').modal('show');
+    
+    // 开始实时日志流
+    logInterval = setInterval(() => {
+        if (currentLogFile) {
+            fetch(`/api/logs/tail/${currentLogFile}`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.newContent) {
+                    appendLogContent(data.newContent);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching realtime log:', error);
+            });
+        }
+    }, 2000);
+}
+
+function stopRealtimeLog() {
+    if (logInterval) {
+        clearInterval(logInterval);
+        logInterval = null;
+    }
+}
+
+function appendLogContent(content) {
+    const lines = content.split('\n');
+    const logContainer = $('#realtimeLogContent');
+    
+    lines.forEach(line => {
+        if (line.trim()) {
+            let className = '';
+            if (line.includes('ERROR') || line.includes('CRITICAL')) {
+                className = 'text-danger';
+            } else if (line.includes('WARNING') || line.includes('WARN')) {
+                className = 'text-warning';
+            } else if (line.includes('INFO')) {
+                className = 'text-info';
+            } else if (line.includes('DEBUG')) {
+                className = 'text-muted';
+            }
+            
+            logContainer.append(`<div class="log-line ${className}">${escapeHtml(line)}</div>`);
+        }
+    });
+    
+    // 自动滚动到底部
+    if (autoScroll) {
+        const container = logContainer[0];
+        container.scrollTop = container.scrollHeight;
+    }
+}
+
+// 模态框关闭时停止实时日志
+$('#realtimeLogModal').on('hidden.bs.modal', function() {
+    stopRealtimeLog();
+});
+</script>
+{% endblock %}
+
+

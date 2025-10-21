@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}用户资料 - Cisco设备配置备份系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">用户资料</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>基本信息</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>用户名：</strong> {{ user.username }}</p>
+                        <p><strong>创建时间：</strong> {{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') if user.created_at else '未知' }}</p>
+                        <p><strong>最后更新：</strong> {{ user.updated_at.strftime('%Y-%m-%d %H:%M:%S') if user.updated_at else '未知' }}</p>
+                        <p><strong>状态：</strong> 
+                            <span class="badge bg-{{ 'success' if user.is_active else 'danger' }}">
+                                {{ '活跃' if user.is_active else '禁用' }}
+                            </span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5>修改密码</h5>
+            </div>
+            <div class="card-body">
+                <form id="changePasswordForm">
+                    <div class="mb-3">
+                        <label for="old_password" class="form-label">旧密码</label>
+                        <input type="password" class="form-control" id="old_password" name="old_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">新密码</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="confirm_new_password" class="form-label">确认新密码</label>
+                        <input type="password" class="form-control" id="confirm_new_password" name="confirm_new_password" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">修改密码</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const oldPassword = document.getElementById('old_password').value;
+    const newPassword = document.getElementById('new_password').value;
+    const confirmPassword = document.getElementById('confirm_new_password').value;
+    
+    if (newPassword !== confirmPassword) {
+        alert('新密码和确认密码不一致');
+        return;
+    }
+    
+    fetch('/auth/change-password', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            old_password: oldPassword,
+            new_password: newPassword
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('密码修改成功');
+            document.getElementById('changePasswordForm').reset();
+        } else {
+            alert('密码修改失败：' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('密码修改失败，请稍后重试');
+    });
+});
+</script>
+{% endblock %}
+

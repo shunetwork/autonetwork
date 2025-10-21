@@ -1,0 +1,346 @@
+{% extends "base.html" %}
+
+{% block title %}单设备备份 - Cisco设备配置备份系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">单设备备份</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回首页
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-download"></i> 设备备份配置
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="backupForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="device_id" class="form-label">选择设备 <span class="text-danger">*</span></label>
+                                <select class="form-select" id="device_id" name="device_id" required>
+                                    <option value="">请选择设备</option>
+                                    {% for device in devices %}
+                                    <option value="{{ device.id }}" 
+                                            data-ip="{{ device.ip_address }}"
+                                            data-type="{{ device.device_type }}"
+                                            data-command="{{ device.backup_command }}">
+                                        {{ device.alias or device.ip_address }} ({{ device.ip_address }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="backup_command" class="form-label">备份命令</label>
+                                <input type="text" class="form-control" id="backup_command" name="backup_command" 
+                                       placeholder="show running-config" value="show running-config">
+                                <div class="form-text">默认使用设备的备份命令，可自定义</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="device_ip" class="form-label">管理IP</label>
+                                <input type="text" class="form-control" id="device_ip" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="device_type" class="form-label">设备类型</label>
+                                <input type="text" class="form-control" id="device_type" readonly>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="test_connection" name="test_connection">
+                            <label class="form-check-label" for="test_connection">
+                                备份前测试连接
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-outline-secondary" id="testBtn">
+                            <i class="fas fa-plug"></i> 测试连接
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="backupBtn">
+                            <i class="fas fa-download"></i> 开始备份
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle"></i> 备份说明
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>支持的设备类型：</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> Cisco IOS</li>
+                    <li><i class="fas fa-check text-success"></i> Cisco IOS-XE</li>
+                    <li><i class="fas fa-check text-success"></i> Cisco NX-OS</li>
+                </ul>
+                
+                <h6>支持的协议：</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-check text-success"></i> SSH (推荐)</li>
+                    <li><i class="fas fa-check text-success"></i> Telnet</li>
+                </ul>
+                
+                <h6>常用备份命令：</h6>
+                <ul class="list-unstyled small">
+                    <li><code>show running-config</code> - 运行配置</li>
+                    <li><code>show startup-config</code> - 启动配置</li>
+                    <li><code>show version</code> - 版本信息</li>
+                    <li><code>show inventory</code> - 硬件清单</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="card shadow mt-3">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-history"></i> 最近备份
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="recentBackups">
+                    <div class="text-center text-muted">
+                        <i class="fas fa-spinner fa-spin"></i> 加载中...
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 备份进度模态框 -->
+<div class="modal fade" id="backupProgressModal" tabindex="-1" aria-labelledby="backupProgressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="backupProgressModalLabel">
+                    <i class="fas fa-download"></i> 备份进度
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>备份进度</span>
+                        <span id="progressText">准备中...</span>
+                    </div>
+                    <div class="progress">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%" id="progressBar"></div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>备份日志：</h6>
+                    <div class="log-container" id="backupLogs">
+                        <div class="text-muted">等待备份开始...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 设备选择变化时更新信息
+    $('#device_id').change(function() {
+        const selectedOption = $(this).find('option:selected');
+        if (selectedOption.val()) {
+            $('#device_ip').val(selectedOption.data('ip'));
+            $('#device_type').val(selectedOption.data('type'));
+            $('#backup_command').val(selectedOption.data('command'));
+        } else {
+            $('#device_ip').val('');
+            $('#device_type').val('');
+            $('#backup_command').val('show running-config');
+        }
+    });
+    
+    // 测试连接
+    $('#testBtn').click(function() {
+        const deviceId = $('#device_id').val();
+        if (!deviceId) {
+            alert('请先选择设备');
+            return;
+        }
+        
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 测试中...');
+        
+        fetch('/api/device/test', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                device_id: deviceId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('连接测试成功！');
+            } else {
+                alert('连接测试失败：' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('测试请求失败，请稍后重试');
+        })
+        .finally(() => {
+            $(this).prop('disabled', false).html('<i class="fas fa-plug"></i> 测试连接');
+        });
+    });
+    
+    // 提交备份表单
+    $('#backupForm').submit(function(e) {
+        e.preventDefault();
+        
+        const deviceId = $('#device_id').val();
+        const backupCommand = $('#backup_command').val();
+        const testConnection = $('#test_connection').is(':checked');
+        
+        if (!deviceId) {
+            alert('请选择要备份的设备');
+            return;
+        }
+        
+        $('#backupBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 提交中...');
+        
+        fetch('/api/backup/single', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                device_id: parseInt(deviceId),
+                backup_command: backupCommand,
+                test_connection: testConnection
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                $('#backupProgressModal').modal('show');
+                startProgressPolling(data.task_id);
+            } else {
+                alert('备份任务提交失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('请求失败，请稍后重试');
+        })
+        .finally(() => {
+            $('#backupBtn').prop('disabled', false).html('<i class="fas fa-download"></i> 开始备份');
+        });
+    });
+    
+    // 加载最近备份
+    loadRecentBackups();
+});
+
+function startProgressPolling(taskId) {
+    const progressBar = $('#progressBar');
+    const progressText = $('#progressText');
+    const backupLogs = $('#backupLogs');
+    
+    let progress = 0;
+    const interval = setInterval(() => {
+        fetch(`/api/backup/progress/${taskId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success' || data.status === 'failed') {
+                clearInterval(interval);
+                progressBar.css('width', '100%');
+                progressText.text(data.status === 'success' ? '备份完成' : '备份失败');
+                progressBar.removeClass('progress-bar-animated');
+                
+                if (data.status === 'success') {
+                    progressBar.addClass('bg-success');
+                } else {
+                    progressBar.addClass('bg-danger');
+                }
+            } else if (data.status === 'running') {
+                progress += Math.random() * 10;
+                if (progress > 90) progress = 90;
+                progressBar.css('width', progress + '%');
+                progressText.text('备份中...');
+            }
+            
+            // 更新日志
+            if (data.logs && data.logs.length > 0) {
+                backupLogs.html(data.logs.map(log => 
+                    `<div class="mb-1"><span class="text-muted">[${log.timestamp}]</span> ${log.message}</div>`
+                ).join(''));
+            }
+        })
+        .catch(error => {
+            console.error('Progress polling error:', error);
+        });
+    }, 2000);
+}
+
+function loadRecentBackups() {
+    fetch('/api/backup/recent')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success && data.tasks.length > 0) {
+            const html = data.tasks.map(task => `
+                <div class="d-flex align-items-center mb-2">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-${task.status === 'success' ? 'check-circle text-success' : 
+                                          task.status === 'failed' ? 'times-circle text-danger' : 
+                                          task.status === 'running' ? 'spinner text-warning fa-spin' : 'clock text-secondary'}"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-2">
+                        <div class="fw-bold small">${task.device_alias || task.device_ip}</div>
+                        <div class="text-muted small">${new Date(task.created_at).toLocaleString()}</div>
+                    </div>
+                </div>
+            `).join('');
+            $('#recentBackups').html(html);
+        } else {
+            $('#recentBackups').html('<div class="text-center text-muted"><i class="fas fa-history"></i><br>暂无备份记录</div>');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading recent backups:', error);
+        $('#recentBackups').html('<div class="text-center text-muted"><i class="fas fa-exclamation-triangle"></i><br>加载失败</div>');
+    });
+}
+</script>
+{% endblock %}
+

@@ -1,0 +1,570 @@
+{% extends "base.html" %}
+
+{% block title %}设备管理 - Cisco设备配置备份系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">设备管理</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
+            <i class="fas fa-plus"></i> 添加设备
+        </button>
+    </div>
+</div>
+
+<!-- 设备列表 -->
+<div class="card shadow">
+    <div class="card-header">
+        <h5 class="card-title mb-0">
+            <i class="fas fa-server"></i> 设备列表
+        </h5>
+    </div>
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead>
+                    <tr>
+                        <th>设备别名</th>
+                        <th>IP地址</th>
+                        <th>端口</th>
+                        <th>协议</th>
+                        <th>设备类型</th>
+                        <th>用户名</th>
+                        <th>最后备份</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for device in devices %}
+                    <tr>
+                        <td>
+                            <div class="fw-bold">{{ device.alias or '未设置' }}</div>
+                        </td>
+                        <td>{{ device.ip_address }}</td>
+                        <td>{{ device.port }}</td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if device.protocol == 'ssh' else 'info' }}">
+                                {{ device.protocol.upper() }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-secondary">{{ device.device_type }}</span>
+                        </td>
+                        <td>{{ device.username }}</td>
+                        <td>
+                            {% if device.last_backup %}
+                                <div class="small">{{ device.last_backup.strftime('%Y-%m-%d %H:%M') }}</div>
+                                <span class="badge bg-{{ 'success' if device.last_backup_status == 'success' else 'danger' }}">
+                                    {{ device.last_backup_status }}
+                                </span>
+                            {% else %}
+                                <span class="text-muted">从未备份</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if device.is_active else 'secondary' }}">
+                                {{ '活跃' if device.is_active else '禁用' }}
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button class="btn btn-outline-primary" onclick="testDevice({{ device.id }})" title="测试连接">
+                                    <i class="fas fa-plug"></i>
+                                </button>
+                                <button class="btn btn-outline-success" onclick="backupDevice({{ device.id }})" title="立即备份">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="btn btn-outline-info" onclick="editDevice({{ device.id }})" title="编辑设备">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn btn-outline-danger" onclick="deleteDevice({{ device.id }})" title="删除设备">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        {% if not devices %}
+        <div class="text-center py-5">
+            <i class="fas fa-server fa-3x text-muted mb-3"></i>
+            <h5 class="text-muted">暂无设备</h5>
+            <p class="text-muted">请添加您的Cisco设备以开始备份</p>
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addDeviceModal">
+                <i class="fas fa-plus"></i> 添加第一个设备
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- 添加设备模态框 -->
+<div class="modal fade" id="addDeviceModal" tabindex="-1" aria-labelledby="addDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="addDeviceModalLabel">
+                    <i class="fas fa-plus"></i> 添加设备
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="addDeviceForm">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="alias" class="form-label">设备别名</label>
+                                <input type="text" class="form-control" id="alias" name="alias" 
+                                       placeholder="例如：核心交换机">
+                                <div class="form-text">便于识别的设备名称（可选）</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ip_address" class="form-label">管理IP <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="ip_address" name="ip_address" 
+                                       placeholder="192.168.1.1" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="username" name="username" 
+                                       placeholder="admin" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="password" class="form-label">密码 <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="password" name="password" 
+                                       placeholder="请输入密码" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="port" class="form-label">端口</label>
+                                <input type="number" class="form-control" id="port" name="port" 
+                                       value="22" min="1" max="65535">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="protocol" class="form-label">协议</label>
+                                <select class="form-select" id="protocol" name="protocol">
+                                    <option value="ssh">SSH</option>
+                                    <option value="telnet">Telnet</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="device_type" class="form-label">设备类型</label>
+                                <select class="form-select" id="device_type" name="device_type">
+                                    <option value="cisco_ios">Cisco IOS</option>
+                                    <option value="cisco_xe">Cisco IOS-XE</option>
+                                    <option value="cisco_nxos">Cisco NX-OS</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="enable_password" class="form-label">Enable密码</label>
+                        <input type="password" class="form-control" id="enable_password" name="enable_password" 
+                               placeholder="特权模式密码（可选）">
+                        <div class="form-text">如果设备需要进入特权模式，请填写此密码</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="backup_command" class="form-label">备份命令</label>
+                        <input type="text" class="form-control" id="backup_command" name="backup_command" 
+                               value="show running-config" placeholder="show running-config">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="is_active" name="is_active" checked>
+                            <label class="form-check-label" for="is_active">
+                                启用设备
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-outline-info" id="testConnectionBtn">
+                    <i class="fas fa-plug"></i> 测试连接
+                </button>
+                <button type="button" class="btn btn-primary" id="saveDeviceBtn">
+                    <i class="fas fa-save"></i> 保存设备
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 编辑设备模态框 -->
+<div class="modal fade" id="editDeviceModal" tabindex="-1" aria-labelledby="editDeviceModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDeviceModalLabel">
+                    <i class="fas fa-edit"></i> 编辑设备
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form id="editDeviceForm">
+                    <input type="hidden" id="edit_device_id" name="device_id">
+                    <!-- 编辑表单内容与添加表单相同 -->
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_alias" class="form-label">设备别名</label>
+                                <input type="text" class="form-control" id="edit_alias" name="alias">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_ip_address" class="form-label">管理IP <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit_ip_address" name="ip_address" required>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_username" class="form-label">用户名 <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit_username" name="username" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="edit_password" class="form-label">密码</label>
+                                <input type="password" class="form-control" id="edit_password" name="password">
+                                <div class="form-text">留空表示不修改密码</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="edit_port" class="form-label">端口</label>
+                                <input type="number" class="form-control" id="edit_port" name="port" min="1" max="65535">
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="edit_protocol" class="form-label">协议</label>
+                                <select class="form-select" id="edit_protocol" name="protocol">
+                                    <option value="ssh">SSH</option>
+                                    <option value="telnet">Telnet</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="edit_device_type" class="form-label">设备类型</label>
+                                <select class="form-select" id="edit_device_type" name="device_type">
+                                    <option value="cisco_ios">Cisco IOS</option>
+                                    <option value="cisco_xe">Cisco IOS-XE</option>
+                                    <option value="cisco_nxos">Cisco NX-OS</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_enable_password" class="form-label">Enable密码</label>
+                        <input type="password" class="form-control" id="edit_enable_password" name="enable_password">
+                        <div class="form-text">留空表示不修改enable密码</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="edit_backup_command" class="form-label">备份命令</label>
+                        <input type="text" class="form-control" id="edit_backup_command" name="backup_command">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="edit_is_active" name="is_active">
+                            <label class="form-check-label" for="edit_is_active">
+                                启用设备
+                            </label>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="button" class="btn btn-outline-info" id="editTestConnectionBtn">
+                    <i class="fas fa-plug"></i> 测试连接
+                </button>
+                <button type="button" class="btn btn-primary" id="updateDeviceBtn">
+                    <i class="fas fa-save"></i> 更新设备
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // 保存设备
+    $('#saveDeviceBtn').click(function() {
+        const formData = {
+            alias: $('#alias').val(),
+            ip_address: $('#ip_address').val(),
+            username: $('#username').val(),
+            password: $('#password').val(),
+            port: parseInt($('#port').val()),
+            protocol: $('#protocol').val(),
+            device_type: $('#device_type').val(),
+            enable_password: $('#enable_password').val(),
+            backup_command: $('#backup_command').val(),
+            is_active: $('#is_active').is(':checked')
+        };
+        
+        if (!formData.ip_address || !formData.username || !formData.password) {
+            alert('请填写必填字段');
+            return;
+        }
+        
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 保存中...');
+        
+        fetch('/api/device/add', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('设备添加成功');
+                location.reload();
+            } else {
+                alert('添加失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('请求失败，请稍后重试');
+        })
+        .finally(() => {
+            $(this).prop('disabled', false).html('<i class="fas fa-save"></i> 保存设备');
+        });
+    });
+    
+    // 编辑设备测试连接
+    $('#editTestConnectionBtn').click(function() {
+        const formData = {
+            ip_address: $('#edit_ip_address').val(),
+            username: $('#edit_username').val(),
+            password: $('#edit_password').val(),
+            port: parseInt($('#edit_port').val()),
+            protocol: $('#edit_protocol').val(),
+            device_type: $('#edit_device_type').val(),
+            enable_password: $('#edit_enable_password').val()
+        };
+        
+        if (!formData.ip_address || !formData.username) {
+            alert('请填写连接信息');
+            return;
+        }
+        
+        // 如果没有填写新密码，使用现有密码
+        if (!formData.password) {
+            alert('请填写密码进行连接测试');
+            return;
+        }
+        
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 测试中...');
+        
+        // 调用测试连接API
+        fetch('/api/device/test-new', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('连接测试成功！设备可以正常连接。');
+            } else {
+                alert('连接测试失败：' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('测试请求失败，请稍后重试');
+        })
+        .finally(() => {
+            $(this).prop('disabled', false).html('<i class="fas fa-plug"></i> 测试连接');
+        });
+    });
+    
+    // 添加设备测试连接
+    $('#testConnectionBtn').click(function() {
+        const formData = {
+            ip_address: $('#ip_address').val(),
+            username: $('#username').val(),
+            password: $('#password').val(),
+            port: parseInt($('#port').val()),
+            protocol: $('#protocol').val(),
+            device_type: $('#device_type').val(),
+            enable_password: $('#enable_password').val()
+        };
+        
+        if (!formData.ip_address || !formData.username || !formData.password) {
+            alert('请填写连接信息');
+            return;
+        }
+        
+        $(this).prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 测试中...');
+        
+        // 调用测试连接API
+        fetch('/api/device/test-new', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('连接测试成功！设备可以正常连接。');
+            } else {
+                alert('连接测试失败：' + data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('测试请求失败，请稍后重试');
+        })
+        .finally(() => {
+            $(this).prop('disabled', false).html('<i class="fas fa-plug"></i> 测试连接');
+        });
+    });
+});
+
+function testDevice(deviceId) {
+    fetch('/api/device/test', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+            device_id: deviceId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('连接测试成功！');
+        } else {
+            alert('连接测试失败：' + data.message);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('测试请求失败，请稍后重试');
+    });
+}
+
+function backupDevice(deviceId) {
+    if (confirm('确定要备份此设备吗？')) {
+        fetch('/api/backup/single', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                device_id: deviceId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('备份任务已提交');
+                location.href = "{{ url_for('history') }}";
+            } else {
+                alert('备份任务提交失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('请求失败，请稍后重试');
+        });
+    }
+}
+
+function editDevice(deviceId) {
+    // 获取设备信息并填充编辑表单
+    fetch(`/api/device/${deviceId}`)
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const device = data.device;
+            $('#edit_device_id').val(device.id);
+            $('#edit_alias').val(device.alias || '');
+            $('#edit_ip_address').val(device.ip_address);
+            $('#edit_username').val(device.username);
+            $('#edit_port').val(device.port);
+            $('#edit_protocol').val(device.protocol);
+            $('#edit_device_type').val(device.device_type);
+            $('#edit_backup_command').val(device.backup_command);
+            $('#edit_is_active').prop('checked', device.is_active);
+            
+            $('#editDeviceModal').modal('show');
+        } else {
+            alert('获取设备信息失败：' + data.error);
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('请求失败，请稍后重试');
+    });
+}
+
+function deleteDevice(deviceId) {
+    if (confirm('确定要删除此设备吗？此操作不可恢复！')) {
+        fetch(`/api/device/${deviceId}`, {
+            method: 'DELETE'
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('设备删除成功');
+                location.reload();
+            } else {
+                alert('删除失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('删除请求失败，请稍后重试');
+        });
+    }
+}
+</script>
+{% endblock %}

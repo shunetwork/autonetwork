@@ -1,0 +1,543 @@
+{% extends "base.html" %}
+
+{% block title %}批量备份 - Cisco设备配置备份系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">批量备份</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回首页
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 批量导入卡片 -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-upload"></i> 批量导入设备
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="importForm" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="importFile" class="form-label">选择文件 <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" id="importFile" name="importFile" 
+                               accept=".csv,.xlsx,.xls" required>
+                        <div class="form-text">支持CSV和Excel格式文件</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="backupCommand" class="form-label">备份命令</label>
+                        <input type="text" class="form-control" id="backupCommand" name="backupCommand" 
+                               value="show running-config" placeholder="show running-config">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="testConnections" name="testConnections">
+                            <label class="form-check-label" for="testConnections">
+                                导入前测试所有设备连接
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-outline-info" id="downloadTemplateBtn">
+                            <i class="fas fa-download"></i> 下载模板
+                        </button>
+                        <button type="submit" class="btn btn-primary" id="importBtn">
+                            <i class="fas fa-upload"></i> 导入并备份
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- 导入结果 -->
+        <div class="card shadow" id="importResultCard" style="display: none;">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list-check"></i> 导入结果
+                </h5>
+            </div>
+            <div class="card-body">
+                <div id="importResult"></div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <!-- 导入说明 -->
+        <div class="card shadow mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-info-circle"></i> 导入说明
+                </h5>
+            </div>
+            <div class="card-body">
+                <h6>文件格式要求：</h6>
+                <ul class="list-unstyled small">
+                    <li><i class="fas fa-check text-success"></i> CSV文件：UTF-8编码</li>
+                    <li><i class="fas fa-check text-success"></i> Excel文件：.xlsx或.xls格式</li>
+                </ul>
+                
+                <h6>必填字段：</h6>
+                <ul class="list-unstyled small">
+                    <li><code>ip_address</code> - 设备IP地址</li>
+                    <li><code>username</code> - 登录用户名</li>
+                    <li><code>password</code> - 登录密码</li>
+                </ul>
+                
+                <h6>可选字段：</h6>
+                <ul class="list-unstyled small">
+                    <li><code>alias</code> - 设备别名</li>
+                    <li><code>port</code> - 端口号（默认22）</li>
+                    <li><code>protocol</code> - 协议（ssh/telnet）</li>
+                    <li><code>device_type</code> - 设备类型</li>
+                    <li><code>enable_password</code> - 特权密码</li>
+                </ul>
+            </div>
+        </div>
+        
+        <!-- 批量操作 -->
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-tasks"></i> 批量操作
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <button class="btn btn-outline-primary" id="selectAllDevicesBtn">
+                        <i class="fas fa-check-square"></i> 选择所有设备
+                    </button>
+                    <button class="btn btn-outline-secondary" id="clearSelectionBtn">
+                        <i class="fas fa-square"></i> 清除选择
+                    </button>
+                    <button class="btn btn-success" id="backupSelectedBtn" disabled>
+                        <i class="fas fa-download"></i> 备份选中设备
+                    </button>
+                </div>
+                
+                <hr>
+                
+                <div class="mb-3">
+                    <label for="batchBackupCommand" class="form-label">批量备份命令</label>
+                    <input type="text" class="form-control" id="batchBackupCommand" 
+                           value="show running-config" placeholder="show running-config">
+                </div>
+                
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="batchTestConnections">
+                    <label class="form-check-label" for="batchTestConnections">
+                        备份前测试连接
+                    </label>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 设备列表模态框 -->
+<div class="modal fade" id="deviceListModal" tabindex="-1" aria-labelledby="deviceListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="deviceListModalLabel">
+                    <i class="fas fa-server"></i> 设备列表
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="deviceTable">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input type="checkbox" id="selectAllCheckbox">
+                                </th>
+                                <th>设备别名</th>
+                                <th>IP地址</th>
+                                <th>设备类型</th>
+                                <th>协议</th>
+                                <th>端口</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody id="deviceTableBody">
+                            <!-- 设备列表将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                <button type="button" class="btn btn-primary" id="confirmBatchBackupBtn">确认备份</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 批量备份进度模态框 -->
+<div class="modal fade" id="batchProgressModal" tabindex="-1" aria-labelledby="batchProgressModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="batchProgressModalLabel">
+                    <i class="fas fa-layer-group"></i> 批量备份进度
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <div class="d-flex justify-content-between">
+                        <span>总体进度</span>
+                        <span id="batchProgressText">准备中...</span>
+                    </div>
+                    <div class="progress mb-2">
+                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                             role="progressbar" style="width: 0%" id="batchProgressBar"></div>
+                    </div>
+                    <div class="row text-center">
+                        <div class="col-3">
+                            <div class="text-success">
+                                <i class="fas fa-check-circle"></i>
+                                <div id="successCount">0</div>
+                                <small>成功</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="text-danger">
+                                <i class="fas fa-times-circle"></i>
+                                <div id="failedCount">0</div>
+                                <small>失败</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="text-warning">
+                                <i class="fas fa-spinner fa-spin"></i>
+                                <div id="runningCount">0</div>
+                                <small>进行中</small>
+                            </div>
+                        </div>
+                        <div class="col-3">
+                            <div class="text-secondary">
+                                <i class="fas fa-clock"></i>
+                                <div id="pendingCount">0</div>
+                                <small>等待中</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>任务详情：</h6>
+                    <div class="log-container" id="batchLogs" style="max-height: 300px;">
+                        <div class="text-muted">等待批量备份开始...</div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let selectedDevices = [];
+    let batchTaskIds = [];
+    
+    // 下载模板
+    $('#downloadTemplateBtn').click(function() {
+        // 创建CSV模板
+        const csvContent = "ip_address,username,password,alias,port,protocol,device_type,enable_password\n" +
+                          "192.168.1.1,admin,password123,Router-01,22,ssh,cisco_ios,enable123\n" +
+                          "192.168.1.2,admin,password456,Switch-01,22,ssh,cisco_ios,\n";
+        
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement("a");
+        const url = URL.createObjectURL(blob);
+        link.setAttribute("href", url);
+        link.setAttribute("download", "device_template.csv");
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    });
+    
+    // 导入表单提交
+    $('#importForm').submit(function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData();
+        const fileInput = $('#importFile')[0];
+        
+        if (!fileInput.files[0]) {
+            alert('请选择要导入的文件');
+            return;
+        }
+        
+        formData.append('file', fileInput.files[0]);
+        formData.append('backup_command', $('#backupCommand').val());
+        formData.append('test_connections', $('#testConnections').is(':checked'));
+        
+        $('#importBtn').prop('disabled', true).html('<i class="fas fa-spinner fa-spin"></i> 导入中...');
+        
+        fetch('/api/import/devices', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showImportResult(data);
+                if (data.task_ids && data.task_ids.length > 0) {
+                    $('#batchProgressModal').modal('show');
+                    startBatchProgressPolling(data.task_ids);
+                }
+            } else {
+                alert('导入失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('导入请求失败，请稍后重试');
+        })
+        .finally(() => {
+            $('#importBtn').prop('disabled', false).html('<i class="fas fa-upload"></i> 导入并备份');
+        });
+    });
+    
+    // 选择所有设备
+    $('#selectAllDevicesBtn').click(function() {
+        loadDeviceList();
+        $('#deviceListModal').modal('show');
+    });
+    
+    // 全选/取消全选
+    $('#selectAllCheckbox').change(function() {
+        const isChecked = $(this).is(':checked');
+        $('#deviceTableBody input[type="checkbox"]').prop('checked', isChecked);
+        updateSelectedDevices();
+    });
+    
+    // 设备选择变化
+    $(document).on('change', '#deviceTableBody input[type="checkbox"]', function() {
+        updateSelectedDevices();
+    });
+    
+    // 确认批量备份
+    $('#confirmBatchBackupBtn').click(function() {
+        if (selectedDevices.length === 0) {
+            alert('请至少选择一个设备');
+            return;
+        }
+        
+        const backupCommand = $('#batchBackupCommand').val();
+        const testConnections = $('#batchTestConnections').is(':checked');
+        
+        $('#deviceListModal').modal('hide');
+        $('#batchProgressModal').modal('show');
+        
+        // 执行批量备份
+        fetch('/api/backup/batch', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                device_ids: selectedDevices,
+                backup_command: backupCommand,
+                test_connections: testConnections
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                batchTaskIds = data.task_ids || [];
+                startBatchProgressPolling(batchTaskIds);
+            } else {
+                alert('批量备份失败：' + data.error);
+                $('#batchProgressModal').modal('hide');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('批量备份请求失败，请稍后重试');
+            $('#batchProgressModal').modal('hide');
+        });
+    });
+    
+    // 清除选择
+    $('#clearSelectionBtn').click(function() {
+        selectedDevices = [];
+        $('#backupSelectedBtn').prop('disabled', true);
+    });
+});
+
+function showImportResult(data) {
+    const resultHtml = `
+        <div class="alert alert-${data.success ? 'success' : 'danger'}">
+            <h6>导入结果：</h6>
+            <ul class="mb-0">
+                <li>成功导入：${data.success_count || 0} 个设备</li>
+                <li>导入失败：${data.error_count || 0} 个设备</li>
+                <li>跳过重复：${data.skipped_count || 0} 个设备</li>
+            </ul>
+        </div>
+    `;
+    
+    if (data.errors && data.errors.length > 0) {
+        resultHtml += `
+            <div class="alert alert-warning">
+                <h6>错误详情：</h6>
+                <ul class="mb-0">
+                    ${data.errors.map(error => `<li>${error}</li>`).join('')}
+                </ul>
+            </div>
+        `;
+    }
+    
+    $('#importResult').html(resultHtml);
+    $('#importResultCard').show();
+}
+
+function loadDeviceList() {
+    fetch('/api/device/list')
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const tbody = $('#deviceTableBody');
+            tbody.empty();
+            
+            data.devices.forEach(device => {
+                const row = `
+                    <tr>
+                        <td>
+                            <input type="checkbox" value="${device.id}" class="device-checkbox">
+                        </td>
+                        <td>${device.alias || '未设置'}</td>
+                        <td>${device.ip_address}</td>
+                        <td><span class="badge bg-info">${device.device_type}</span></td>
+                        <td>${device.protocol.toUpperCase()}</td>
+                        <td>${device.port}</td>
+                        <td>
+                            <span class="badge bg-${device.is_active ? 'success' : 'secondary'}">
+                                ${device.is_active ? '活跃' : '禁用'}
+                            </span>
+                        </td>
+                    </tr>
+                `;
+                tbody.append(row);
+            });
+        }
+    })
+    .catch(error => {
+        console.error('Error loading devices:', error);
+    });
+}
+
+function updateSelectedDevices() {
+    selectedDevices = [];
+    $('#deviceTableBody input[type="checkbox"]:checked').each(function() {
+        selectedDevices.push(parseInt($(this).val()));
+    });
+    
+    $('#backupSelectedBtn').prop('disabled', selectedDevices.length === 0);
+    $('#backupSelectedBtn').text(`备份选中设备 (${selectedDevices.length})`);
+}
+
+function startBatchProgressPolling(taskIds) {
+    if (!taskIds || taskIds.length === 0) return;
+    
+    const progressBar = $('#batchProgressBar');
+    const progressText = $('#batchProgressText');
+    const batchLogs = $('#batchLogs');
+    const successCount = $('#successCount');
+    const failedCount = $('#failedCount');
+    const runningCount = $('#runningCount');
+    const pendingCount = $('#pendingCount');
+    
+    let completedTasks = 0;
+    let successTasks = 0;
+    let failedTasks = 0;
+    let runningTasks = 0;
+    
+    const interval = setInterval(() => {
+        // 获取所有任务状态
+        Promise.all(taskIds.map(taskId => 
+            fetch(`/api/backup/progress/${taskId}`)
+            .then(response => response.json())
+        ))
+        .then(results => {
+            completedTasks = 0;
+            successTasks = 0;
+            failedTasks = 0;
+            runningTasks = 0;
+            
+            results.forEach(result => {
+                if (result.status === 'success' || result.status === 'failed') {
+                    completedTasks++;
+                    if (result.status === 'success') successTasks++;
+                    else failedTasks++;
+                } else if (result.status === 'running') {
+                    runningTasks++;
+                }
+            });
+            
+            const totalTasks = taskIds.length;
+            const progress = (completedTasks / totalTasks) * 100;
+            
+            progressBar.css('width', progress + '%');
+            progressText.text(`${completedTasks}/${totalTasks} 完成`);
+            
+            successCount.text(successTasks);
+            failedCount.text(failedTasks);
+            runningCount.text(runningTasks);
+            pendingCount.text(totalTasks - completedTasks - runningTasks);
+            
+            // 更新日志
+            const logEntries = results
+                .filter(result => result.logs && result.logs.length > 0)
+                .flatMap(result => result.logs)
+                .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp))
+                .slice(-10); // 只显示最近10条日志
+            
+            if (logEntries.length > 0) {
+                batchLogs.html(logEntries.map(log => 
+                    `<div class="mb-1"><span class="text-muted">[${new Date(log.timestamp).toLocaleTimeString()}]</span> ${log.message}</div>`
+                ).join(''));
+            }
+            
+            // 所有任务完成
+            if (completedTasks === totalTasks) {
+                clearInterval(interval);
+                progressBar.removeClass('progress-bar-animated');
+                progressText.text('批量备份完成');
+                
+                if (successTasks === totalTasks) {
+                    progressBar.addClass('bg-success');
+                } else if (failedTasks === totalTasks) {
+                    progressBar.addClass('bg-danger');
+                } else {
+                    progressBar.addClass('bg-warning');
+                }
+            }
+        })
+        .catch(error => {
+            console.error('Batch progress polling error:', error);
+        });
+    }, 3000);
+}
+</script>
+{% endblock %}
+
+

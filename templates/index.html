@@ -1,0 +1,231 @@
+{% extends "base.html" %}
+
+{% block title %}首页 - Cisco设备配置备份系统{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">系统概览</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <a href="{{ url_for('backup_single') }}" class="btn btn-sm btn-outline-primary">
+                <i class="fas fa-download"></i> 立即备份
+            </a>
+            <a href="{{ url_for('backup_batch') }}" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-layer-group"></i> 批量备份
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- 统计卡片 -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">总设备数</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ devices|length }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-server fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">活跃设备</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ devices|selectattr('is_active')|list|length }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">今日备份</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ recent_tasks|selectattr('status', 'equalto', 'success')|list|length }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-download fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">运行中任务</div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ recent_tasks|selectattr('status', 'equalto', 'running')|list|length }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-spinner fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 设备列表 -->
+    <div class="col-lg-8">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                <h6 class="m-0 font-weight-bold text-primary">设备列表</h6>
+                <a href="{{ url_for('devices') }}" class="btn btn-sm btn-primary">管理设备</a>
+            </div>
+            <div class="card-body">
+                {% if devices %}
+                    <div class="table-responsive">
+                        <table class="table table-bordered" width="100%" cellspacing="0">
+                            <thead>
+                                <tr>
+                                    <th>设备别名</th>
+                                    <th>IP地址</th>
+                                    <th>设备类型</th>
+                                    <th>最后备份</th>
+                                    <th>状态</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for device in devices %}
+                                <tr>
+                                    <td>{{ device.alias or '未设置' }}</td>
+                                    <td>{{ device.ip_address }}</td>
+                                    <td>
+                                        <span class="badge bg-info">{{ device.device_type }}</span>
+                                    </td>
+                                    <td>
+                                        {% if device.last_backup %}
+                                            {{ device.last_backup.strftime('%Y-%m-%d %H:%M') }}
+                                        {% else %}
+                                            <span class="text-muted">从未备份</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if device.last_backup_status == 'success' %}
+                                            <span class="badge bg-success">成功</span>
+                                        {% elif device.last_backup_status == 'failed' %}
+                                            <span class="badge bg-danger">失败</span>
+                                        {% else %}
+                                            <span class="badge bg-secondary">未知</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="backupDevice({{ device.id }})">
+                                            <i class="fas fa-download"></i> 备份
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-server fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">暂无设备，请先添加设备</p>
+                        <a href="{{ url_for('devices') }}" class="btn btn-primary">添加设备</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- 最近任务 -->
+    <div class="col-lg-4">
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">最近备份任务</h6>
+            </div>
+            <div class="card-body">
+                {% if recent_tasks %}
+                    {% for task in recent_tasks[:5] %}
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            {% if task.status == 'success' %}
+                                <i class="fas fa-check-circle text-success"></i>
+                            {% elif task.status == 'failed' %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                            {% elif task.status == 'running' %}
+                                <i class="fas fa-spinner text-warning fa-spin"></i>
+                            {% else %}
+                                <i class="fas fa-clock text-secondary"></i>
+                            {% endif %}
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="fw-bold">{{ task.device.alias or task.device.ip_address }}</div>
+                            <div class="text-muted small">
+                                {{ task.created_at.strftime('%m-%d %H:%M') }}
+                                <span class="badge status-badge bg-{{ 'success' if task.status == 'success' else 'danger' if task.status == 'failed' else 'warning' if task.status == 'running' else 'secondary' }}">
+                                    {{ task.status }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="text-center">
+                        <a href="{{ url_for('history') }}" class="btn btn-sm btn-outline-primary">查看全部</a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-3">
+                        <i class="fas fa-history fa-2x text-muted mb-2"></i>
+                        <p class="text-muted small">暂无备份任务</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function backupDevice(deviceId) {
+    if (confirm('确定要备份此设备吗？')) {
+        fetch('/api/backup/single', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                device_id: deviceId
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('备份任务已提交，请查看备份历史');
+                location.reload();
+            } else {
+                alert('备份任务提交失败：' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('请求失败，请稍后重试');
+        });
+    }
+}
+</script>
+{% endblock %}
+
