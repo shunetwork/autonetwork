@@ -8,7 +8,7 @@ Cisco设备配置备份系统
 import os
 import logging
 from datetime import datetime
-from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, send_file
+from flask import Flask, render_template, request, jsonify, redirect, url_for, flash, send_file, send_from_directory
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, logout_user, login_required, current_user
 from flask_migrate import Migrate
@@ -156,18 +156,7 @@ def logs():
 @login_required
 def compare():
     """配置对比页面 - Vue 3 CDN版本"""
-    # 获取活跃设备列表
-    devices = Device.query.filter_by(is_active=True).all()
-    device_list = []
-    for device in devices:
-        device_list.append({
-            'id': device.id,
-            'alias': device.alias,
-            'ip_address': device.ip_address,
-            'is_active': device.is_active
-        })
-    
-    return render_template('compare_vue.html', devices=device_list)
+    return send_from_directory('static', 'compare_vue.html')
 
 if __name__ == '__main__':
     with app.app_context():
