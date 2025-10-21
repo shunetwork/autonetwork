@@ -7,13 +7,14 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script>
-// 强制刷新缓存和清除所有缓存
-console.log('页面加载，开始强制刷新...');
+// 检查是否需要强制刷新（只检查一次）
+console.log('页面加载，检查强制刷新...');
 const urlParams = new URLSearchParams(window.location.search);
 const hasVersion = urlParams.has('v') || urlParams.has('force_reload');
 if (!hasVersion) {
     console.log('添加版本参数强制刷新');
     window.location.href = window.location.href + (window.location.search ? '&' : '?') + 'v=' + new Date().getTime();
+    return; // 立即返回，避免继续执行
 } else {
     console.log('已添加版本参数，开始加载任务');
 }
@@ -229,6 +230,8 @@ $(document).ready(function() {
         window.location.href = window.location.href + (window.location.search ? '&' : '?') + 'force_reload=1&t=' + new Date().getTime();
         return;
     }
+    
+    console.log('页面已强制刷新，开始正常初始化...');
     
     // 清理可能遗留的模态框
     forceCloseAllModals();
