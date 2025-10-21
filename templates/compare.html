@@ -240,6 +240,8 @@ $(document).ready(function() {
     // 强制显示设备选择部分
     console.log('强制显示设备选择部分...');
     $('#deviceSelect').closest('.row').show();
+    $('#deviceSelect').show();
+    console.log('设备选择区域强制显示完成');
     
     // 加载设备和备份任务
     console.log('开始加载设备...');
@@ -349,8 +351,15 @@ function loadDevices() {
     console.log('设备选择元素存在:', $('#deviceSelect').length > 0);
     console.log('设备选择元素可见:', $('#deviceSelect').is(':visible'));
     
+    // 确保设备选择区域可见
+    $('#deviceSelect').closest('.row').show();
+    $('#deviceSelect').show();
+    
     fetch('/api/device/list')
-    .then(response => response.json())
+    .then(response => {
+        console.log('设备API响应状态:', response.status);
+        return response.json();
+    })
     .then(data => {
         console.log('设备API返回数据:', data);
         if (data.success) {
@@ -358,24 +367,32 @@ function loadDevices() {
             console.log('活跃设备数量:', devices.length);
             const deviceSelect = $('#deviceSelect');
             
-            // 确保设备选择元素可见
-            deviceSelect.closest('.row').show();
-            deviceSelect.show();
+            // 清空并重新填充下拉框
+            deviceSelect.empty();
+            deviceSelect.append('<option value="">请选择设备...</option>');
             
-            deviceSelect.empty().append('<option value="">请选择设备...</option>');
+            if (devices.length === 0) {
+                deviceSelect.append('<option value="" disabled>暂无活跃设备</option>');
+                console.log('没有活跃设备');
+            } else {
+                devices.forEach((device, index) => {
+                    const deviceName = device.alias || device.ip_address || '未知设备';
+                    const option = `<option value="${device.id}">${deviceName} (${device.ip_address})</option>`;
+                    deviceSelect.append(option);
+                    console.log(`添加设备${index + 1}: ${deviceName} (${device.ip_address})`);
+                });
+            }
             
-            devices.forEach(device => {
-                const deviceName = device.alias || device.ip_address || '未知设备';
-                const option = `<option value="${device.id}">${deviceName} (${device.ip_address})</option>`;
-                deviceSelect.append(option);
-            });
-            console.log('设备加载完成，设备选择元素现在可见:', deviceSelect.is(':visible'));
+            console.log('设备加载完成，下拉框选项数量:', deviceSelect.find('option').length);
+            console.log('设备选择元素现在可见:', deviceSelect.is(':visible'));
         } else {
             console.error('设备API返回失败:', data);
+            $('#deviceSelect').append('<option value="" disabled>加载设备失败</option>');
         }
     })
     .catch(error => {
         console.error('Error loading devices:', error);
+        $('#deviceSelect').append('<option value="" disabled>网络错误</option>');
     });
 }
 
