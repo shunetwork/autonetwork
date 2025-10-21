@@ -9,7 +9,9 @@
 <script>
 // 强制刷新缓存和清除所有缓存
 console.log('页面加载，开始强制刷新...');
-if (window.location.search.indexOf('v=') === -1) {
+const urlParams = new URLSearchParams(window.location.search);
+const hasVersion = urlParams.has('v') || urlParams.has('force_reload');
+if (!hasVersion) {
     console.log('添加版本参数强制刷新');
     window.location.href = window.location.href + (window.location.search ? '&' : '?') + 'v=' + new Date().getTime();
 } else {
@@ -217,8 +219,9 @@ function forceCloseAllModals() {
 $(document).ready(function() {
     console.log('文档准备就绪，开始初始化...');
     
-    // 强制清除所有缓存并重新加载
-    if (window.location.search.indexOf('force_reload') === -1) {
+    // 检查是否已经强制刷新过，避免无限循环
+    const urlParams = new URLSearchParams(window.location.search);
+    if (!urlParams.has('force_reload') && !urlParams.has('v')) {
         console.log('强制重新加载页面...');
         window.location.href = window.location.href + (window.location.search ? '&' : '?') + 'force_reload=1&t=' + new Date().getTime();
         return;
