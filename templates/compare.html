@@ -319,15 +319,20 @@ $(document).ready(function() {
     $('#deviceSelect').change(function() {
         const deviceId = $(this).val();
         console.log('选择设备ID:', deviceId);
+        console.log('设备选择元素:', this);
+        console.log('设备选择值:', $(this).val());
         
         if (deviceId) {
+            console.log('设备ID存在，开始加载备份任务...');
             // 启用备份任务选择
             $('#task1Select, #task2Select').prop('disabled', false);
             $('#compareLatestBtn').prop('disabled', false);
             
             // 加载该设备的备份任务
+            console.log('调用loadDeviceBackupTasks函数...');
             loadDeviceBackupTasks(deviceId);
         } else {
+            console.log('设备ID不存在，禁用备份任务选择...');
             // 禁用备份任务选择
             $('#task1Select, #task2Select').prop('disabled', true).val('');
             $('#compareLatestBtn').prop('disabled', true);
@@ -410,8 +415,13 @@ function loadDevices() {
 
 function loadDeviceBackupTasks(deviceId) {
     console.log('开始加载设备备份任务，设备ID:', deviceId);
+    console.log('API URL:', `/api/backup/device/${deviceId}`);
+    
     fetch(`/api/backup/device/${deviceId}`)
-    .then(response => response.json())
+    .then(response => {
+        console.log('API响应状态:', response.status);
+        return response.json();
+    })
     .then(data => {
         console.log('设备备份任务API返回数据:', data);
         if (data.success) {
@@ -420,26 +430,36 @@ function loadDeviceBackupTasks(deviceId) {
             const select1 = $('#task1Select');
             const select2 = $('#task2Select');
             
+            console.log('清空并重新填充下拉框...');
             select1.empty().append('<option value="">请选择备份任务...</option>');
             select2.empty().append('<option value="">请选择备份任务...</option>');
             
             // 存储任务信息供后续使用
             window.backupTasks = tasks;
             
-            tasks.forEach((task, index) => {
-                console.log(`任务${index + 1}:`, task);
-                const createdTime = new Date(task.created_at).toLocaleString();
-                const option = `<option value="${task.id}">${createdTime}</option>`;
-                select1.append(option);
-                select2.append(option);
-            });
-            console.log('设备备份任务加载完成');
+            if (tasks.length === 0) {
+                console.log('没有成功的备份任务');
+                select1.append('<option value="" disabled>暂无备份任务</option>');
+                select2.append('<option value="" disabled>暂无备份任务</option>');
+            } else {
+                tasks.forEach((task, index) => {
+                    console.log(`任务${index + 1}:`, task);
+                    const createdTime = new Date(task.created_at).toLocaleString();
+                    const option = `<option value="${task.id}">${createdTime}</option>`;
+                    select1.append(option);
+                    select2.append(option);
+                });
+            }
+            
+            console.log('设备备份任务加载完成，下拉框选项数量:', select1.find('option').length);
         } else {
             console.error('设备备份任务API返回失败:', data);
+            $('#task1Select, #task2Select').append('<option value="" disabled>加载失败</option>');
         }
     })
     .catch(error => {
         console.error('Error loading device backup tasks:', error);
+        $('#task1Select, #task2Select').append('<option value="" disabled>网络错误</option>');
     });
 }
 
