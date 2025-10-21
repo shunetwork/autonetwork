@@ -51,23 +51,37 @@ if ('caches' in window) {
                 </h5>
             </div>
             <div class="card-body">
+                <!-- 设备选择 -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label">
+                            <i class="fas fa-server"></i> 选择设备
+                        </label>
+                        <select class="form-select" id="deviceSelect">
+                            <option value="">请选择设备...</option>
+                        </select>
+                        <small class="form-text text-muted">选择设备后，将显示该设备的所有备份任务</small>
+                    </div>
+                </div>
+                
+                <!-- 备份任务选择 -->
                 <div class="row">
                     <div class="col-md-6">
                         <label class="form-label">第一个备份（基准）</label>
-                        <select class="form-select" id="task1Select">
-                            <option value="">请选择备份任务...</option>
+                        <select class="form-select" id="task1Select" disabled>
+                            <option value="">请先选择设备...</option>
                         </select>
                     </div>
                     <div class="col-md-6">
                         <label class="form-label">第二个备份（对比）</label>
-                        <select class="form-select" id="task2Select">
-                            <option value="">请选择备份任务...</option>
+                        <select class="form-select" id="task2Select" disabled>
+                            <option value="">请先选择设备...</option>
                         </select>
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-md-6">
-                        <button class="btn btn-outline-info btn-sm" id="compareLatestBtn">
+                        <button class="btn btn-outline-info btn-sm" id="compareLatestBtn" disabled>
                             <i class="fas fa-clock"></i> 对比最新两个备份
                         </button>
                     </div>
@@ -200,8 +214,9 @@ $(document).ready(function() {
         }
     });
     
-    // 加载备份任务
-    console.log('开始加载备份任务...');
+    // 加载设备和备份任务
+    console.log('开始加载设备...');
+    loadDevices();
     loadBackupTasks();
     
     // 检查URL参数
@@ -241,28 +256,42 @@ $(document).ready(function() {
     
     // 对比最新备份
     $('#compareLatestBtn').click(function() {
-        // 获取第一个选择的任务的设备ID
-        const task1Id = $('#task1Select').val();
-        if (task1Id) {
-            // 从任务信息中获取设备ID
-            getDeviceIdFromTask(task1Id).then(deviceId => {
-                if (deviceId) {
-                    compareLatestBackups(deviceId);
-                } else {
-                    alert('无法获取设备信息，请手动选择两个备份任务进行对比');
-                }
-            });
+        const deviceId = $('#deviceSelect').val();
+        if (deviceId) {
+            compareLatestBackups(deviceId);
         } else {
-            alert('请先选择一个备份任务，或手动选择两个备份任务进行对比');
+            alert('请先选择设备');
         }
     });
     
     // 清除选择
     $('#clearSelectionBtn').click(function() {
-        $('#task1Select').val('');
-        $('#task2Select').val('');
+        $('#deviceSelect').val('');
+        $('#task1Select').val('').prop('disabled', true);
+        $('#task2Select').val('').prop('disabled', true);
         $('#compareBtn').prop('disabled', true);
+        $('#compareLatestBtn').prop('disabled', true);
         $('#compareResult').hide();
+    });
+    
+    // 设备选择变化
+    $('#deviceSelect').change(function() {
+        const deviceId = $(this).val();
+        console.log('选择设备ID:', deviceId);
+        
+        if (deviceId) {
+            // 启用备份任务选择
+            $('#task1Select, #task2Select').prop('disabled', false);
+            $('#compareLatestBtn').prop('disabled', false);
+            
+            // 加载该设备的备份任务
+            loadDeviceBackupTasks(deviceId);
+        } else {
+            // 禁用备份任务选择
+            $('#task1Select, #task2Select').prop('disabled', true).val('');
+            $('#compareLatestBtn').prop('disabled', true);
+            $('#compareBtn').prop('disabled', true);
+        }
     });
     
     // 选择变化
@@ -288,15 +317,43 @@ $(document).ready(function() {
     });
 });
 
-function loadBackupTasks() {
-    console.log('开始加载备份任务...');
-    fetch('/api/backup/recent')
+function loadDevices() {
+    console.log('开始加载设备列表...');
+    fetch('/api/device/list')
     .then(response => response.json())
     .then(data => {
-        console.log('API返回数据:', data);
+        console.log('设备API返回数据:', data);
+        if (data.success) {
+            const devices = data.devices.filter(device => device.is_active);
+            console.log('活跃设备数量:', devices.length);
+            const deviceSelect = $('#deviceSelect');
+            
+            deviceSelect.empty().append('<option value="">请选择设备...</option>');
+            
+            devices.forEach(device => {
+                const deviceName = device.alias || device.ip_address || '未知设备';
+                const option = `<option value="${device.id}">${deviceName} (${device.ip_address})</option>`;
+                deviceSelect.append(option);
+            });
+            console.log('设备加载完成');
+        } else {
+            console.error('设备API返回失败:', data);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading devices:', error);
+    });
+}
+
+function loadDeviceBackupTasks(deviceId) {
+    console.log('开始加载设备备份任务，设备ID:', deviceId);
+    fetch(`/api/backup/device/${deviceId}`)
+    .then(response => response.json())
+    .then(data => {
+        console.log('设备备份任务API返回数据:', data);
         if (data.success) {
             const tasks = data.tasks.filter(task => task.status === 'success');
-            console.log('成功任务数量:', tasks.length);
+            console.log('设备成功任务数量:', tasks.length);
             const select1 = $('#task1Select');
             const select2 = $('#task2Select');
             
@@ -308,14 +365,33 @@ function loadBackupTasks() {
             
             tasks.forEach((task, index) => {
                 console.log(`任务${index + 1}:`, task);
-                // 优先使用device_alias，然后是device_ip，最后是device
-                const deviceName = task.device_alias || task.device_ip || task.device || '未知设备';
                 const createdTime = new Date(task.created_at).toLocaleString();
-                console.log(`设备名称: ${deviceName}, 时间: ${createdTime}`);
-                const option = `<option value="${task.id}">${deviceName} - ${createdTime}</option>`;
+                const option = `<option value="${task.id}">${createdTime}</option>`;
                 select1.append(option);
                 select2.append(option);
             });
+            console.log('设备备份任务加载完成');
+        } else {
+            console.error('设备备份任务API返回失败:', data);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading device backup tasks:', error);
+    });
+}
+
+function loadBackupTasks() {
+    console.log('开始加载备份任务...');
+    fetch('/api/backup/recent')
+    .then(response => response.json())
+    .then(data => {
+        console.log('API返回数据:', data);
+        if (data.success) {
+            const tasks = data.tasks.filter(task => task.status === 'success');
+            console.log('成功任务数量:', tasks.length);
+            
+            // 存储任务信息供后续使用
+            window.backupTasks = tasks;
             console.log('任务加载完成');
         } else {
             console.error('API返回失败:', data);

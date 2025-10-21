@@ -240,6 +240,26 @@ def get_recent_backups():
             'error': f'获取最近备份失败: {str(e)}'
         }), 500
 
+@api_bp.route('/backup/device/<int:device_id>')
+@login_required
+def get_device_backups(device_id):
+    """获取特定设备的备份任务"""
+    try:
+        # 获取指定设备的所有备份任务
+        tasks = BackupTask.query.filter_by(device_id=device_id).order_by(BackupTask.created_at.desc()).all()
+        task_data = [task.to_dict() for task in tasks]
+        
+        return jsonify({
+            'success': True,
+            'tasks': task_data
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'获取设备备份失败: {str(e)}'
+        }), 500
+
 @api_bp.route('/backup/download/<int:task_id>')
 @login_required
 def download_backup_file(task_id):

@@ -773,3 +773,16 @@ with app.app_context(). See the documentation for more information.
 2025-10-21 15:24:48,505 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:24:48] "GET /compare?force_reload=1&t=1761031488496 HTTP/1.1" 200 -
 2025-10-21 15:24:48,528 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:24:48] "GET /api/backup/recent HTTP/1.1" 200 -
 2025-10-21 15:24:51,618 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:24:51] "GET /api/backup/compare/quick/1 HTTP/1.1" 200 -
+2025-10-21 15:50:55,769 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:50:55] "GET /compare?force_reload=1&t=1761031488496 HTTP/1.1" 200 -
+2025-10-21 15:50:55,828 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:50:55] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-21 15:50:58,431 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:50:58] "GET /logs HTTP/1.1" 200 -
+2025-10-21 15:50:58,473 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:50:58] "GET /api/logs/view/backup_system.log HTTP/1.1" 200 -
+2025-10-21 15:51:01,662 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:51:01] "GET /compare HTTP/1.1" 200 -
+2025-10-21 15:51:01,708 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:51:01] "GET /compare?force_reload=1&t=1761033061693 HTTP/1.1" 200 -
+2025-10-21 15:51:01,738 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:51:01] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-21 15:51:02,032 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:51:02] "GET /history HTTP/1.1" 200 -
+2025-10-21 15:51:02,082 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:51:02] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-21 15:51:07,758 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:51:07] "GET /backup/batch HTTP/1.1" 200 -
+2025-10-21 15:51:11,946 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:51:11] "GET /backup/batch HTTP/1.1" 200 -
+2025-10-21 15:51:15,685 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:51:15] "GET /backup/single HTTP/1.1" 200 -
+2025-10-21 15:51:15,733 - werkzeug - INFO - 127.0.0.1 - - [21/Oct/2025 15:51:15] "GET /api/backup/recent HTTP/1.1" 200 -
