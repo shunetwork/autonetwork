@@ -7,7 +7,7 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script>
-// 检查是否需要强制刷新（只检查一次）
+// 简化强制刷新逻辑 - 只在没有版本参数时刷新一次
 console.log('页面加载，检查强制刷新...');
 const urlParams = new URLSearchParams(window.location.search);
 const hasVersion = urlParams.has('v') || urlParams.has('force_reload');
@@ -16,7 +16,7 @@ if (!hasVersion) {
     window.location.href = window.location.href + (window.location.search ? '&' : '?') + 'v=' + new Date().getTime();
     return; // 立即返回，避免继续执行
 } else {
-    console.log('已添加版本参数，开始加载任务');
+    console.log('已添加版本参数，跳过强制刷新');
 }
 
 // 清除所有可能的缓存
@@ -223,15 +223,8 @@ function forceCloseAllModals() {
 $(document).ready(function() {
     console.log('文档准备就绪，开始初始化...');
     
-    // 检查是否已经强制刷新过，避免无限循环
-    const urlParams = new URLSearchParams(window.location.search);
-    if (!urlParams.has('force_reload') && !urlParams.has('v')) {
-        console.log('强制重新加载页面...');
-        window.location.href = window.location.href + (window.location.search ? '&' : '?') + 'force_reload=1&t=' + new Date().getTime();
-        return;
-    }
-    
-    console.log('页面已强制刷新，开始正常初始化...');
+    // 页面已通过<head>中的逻辑处理强制刷新，直接开始初始化
+    console.log('开始正常初始化页面...');
     
     // 清理可能遗留的模态框
     forceCloseAllModals();
