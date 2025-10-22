@@ -787,6 +787,60 @@ def get_log_entries():
             'error': f'获取日志条目失败: {str(e)}'
         }), 500
 
+@api_bp.route('/backup/<int:backup_id>/content')
+@login_required
+def get_backup_content(backup_id):
+    """获取备份文件内容"""
+    try:
+        # 获取备份任务信息
+        task = BackupTask.query.get(backup_id)
+        if not task:
+            return jsonify({
+                'success': False,
+                'error': '备份任务不存在'
+            }), 404
+        
+        # 检查备份文件是否存在
+        if not task.file_path or not os.path.exists(task.file_path):
+            return jsonify({
+                'success': False,
+                'error': '备份文件不存在'
+            }), 404
+        
+        # 读取备份文件内容
+        try:
+            with open(task.file_path, 'r', encoding='utf-8') as f:
+                content = f.read()
+        except UnicodeDecodeError:
+            # 如果UTF-8解码失败，尝试其他编码
+            try:
+                with open(task.file_path, 'r', encoding='gbk') as f:
+                    content = f.read()
+            except:
+                with open(task.file_path, 'r', encoding='latin-1') as f:
+                    content = f.read()
+        
+        # 获取文件信息
+        file_stat = os.stat(task.file_path)
+        
+        return jsonify({
+            'success': True,
+            'content': content,
+            'file_info': {
+                'file_path': task.file_path,
+                'file_size': file_stat.st_size,
+                'created_at': task.created_at.isoformat(),
+                'device_alias': task.device.alias if task.device else '未知设备',
+                'backup_command': task.backup_command
+            }
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'获取备份内容失败: {str(e)}'
+        }), 500
+
 @api_bp.route('/backup/compare/<int:task_id1>/<int:task_id2>')
 @login_required
 def compare_backup_files(task_id1, task_id2):

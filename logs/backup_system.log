@@ -2948,3 +2948,180 @@ with app.app_context(). See the documentation for more information.
 2025-10-22 09:58:01,146 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:58:01] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
 2025-10-22 09:58:01,190 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:58:01] "GET / HTTP/1.1" 200 -
 2025-10-22 09:58:01,197 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:58:01] "GET /api/logs/entries HTTP/1.1" 200 -
+2025-10-22 09:58:38,792 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\api.py', reloading
+2025-10-22 09:58:38,793 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 09:58:38,795 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 09:58:38,971 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 09:58:39,876 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 09:58:39,877 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 09:58:39,877 - scheduler - INFO - 备份调度器已启动
+2025-10-22 09:58:39,887 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 09:58:39,891 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 09:59:41,691 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:41] "GET /compare HTTP/1.1" 200 -
+2025-10-22 09:59:41,929 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:41] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 09:59:41,933 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:41] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 09:59:41,949 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:41] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 09:59:41,950 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:41] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 09:59:41,954 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:41] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 09:59:41,957 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:41] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 09:59:53,902 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:53] "GET /devices HTTP/1.1" 200 -
+2025-10-22 09:59:53,985 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:53] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 09:59:53,993 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:53] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 09:59:53,996 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:53] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 09:59:54,001 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:54] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 09:59:54,003 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:54] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 09:59:54,004 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:59:54] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 09:59:59,495 - device_manager - INFO - 密码解密成功，长度: 8
+2025-10-22 09:59:59,518 - paramiko.transport - INFO - Connected (version 2.0, client Cisco-1.25)
+2025-10-22 09:59:59,923 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-22 10:00:00,174 - device_manager - INFO - 成功连接到设备 192.168.10.99
+2025-10-22 10:00:00,280 - device_manager - INFO - 已断开设备 192.168.10.99 的连接
+2025-10-22 10:00:00,281 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:00] "POST /api/device/test HTTP/1.1" 200 -
+2025-10-22 10:00:01,936 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:01] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 10:00:02,073 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:02] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:00:02,078 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:02] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:00:02,082 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:02] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:00:02,085 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:02] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:00:02,086 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:02] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:00:02,087 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:02] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:00:08,253 - device_manager - INFO - 密码解密成功，长度: 8
+2025-10-22 10:00:08,271 - paramiko.transport - INFO - Connected (version 2.0, client Cisco-1.25)
+2025-10-22 10:00:08,666 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-22 10:00:08,925 - device_manager - INFO - 成功连接到设备 192.168.10.98
+2025-10-22 10:00:09,042 - device_manager - INFO - 已断开设备 192.168.10.98 的连接
+2025-10-22 10:00:09,062 - backup_service - INFO - 开始执行备份任务 12
+2025-10-22 10:00:09,062 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:09] "POST /api/backup/single HTTP/1.1" 200 -
+2025-10-22 10:00:09,065 - backup_service - INFO - 任务 12 开始备份设备 192.168.10.98
+2025-10-22 10:00:09,090 - device_manager - INFO - 密码解密成功，长度: 8
+2025-10-22 10:00:09,094 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:09] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:00:09,115 - paramiko.transport - INFO - Connected (version 2.0, client Cisco-1.25)
+2025-10-22 10:00:09,530 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-22 10:00:09,754 - device_manager - INFO - 成功连接到设备 192.168.10.98
+2025-10-22 10:00:10,133 - device_manager - INFO - 已断开设备 192.168.10.98 的连接
+2025-10-22 10:00:31,222 - backup_service - INFO - 开始执行备份任务 13
+2025-10-22 10:00:31,223 - backup_service - INFO - 任务 13 开始备份设备 192.168.10.99
+2025-10-22 10:00:31,225 - backup_service - INFO - 开始执行备份任务 14
+2025-10-22 10:00:31,226 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:31] "POST /api/backup/batch HTTP/1.1" 200 -
+2025-10-22 10:00:31,236 - device_manager - INFO - 密码解密成功，长度: 8
+2025-10-22 10:00:31,239 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:31] "GET /api/backup/batch/progress HTTP/1.1" 200 -
+2025-10-22 10:00:31,250 - backup_service - INFO - 任务 14 开始备份设备 192.168.10.98
+2025-10-22 10:00:31,261 - device_manager - INFO - 密码解密成功，长度: 8
+2025-10-22 10:00:31,265 - paramiko.transport - INFO - Connected (version 2.0, client Cisco-1.25)
+2025-10-22 10:00:31,280 - paramiko.transport - INFO - Connected (version 2.0, client Cisco-1.25)
+2025-10-22 10:00:31,894 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-22 10:00:31,904 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-22 10:00:32,119 - device_manager - INFO - 成功连接到设备 192.168.10.99
+2025-10-22 10:00:32,129 - device_manager - INFO - 成功连接到设备 192.168.10.98
+2025-10-22 10:00:32,509 - device_manager - INFO - 已断开设备 192.168.10.98 的连接
+2025-10-22 10:00:32,545 - device_manager - INFO - 已断开设备 192.168.10.99 的连接
+2025-10-22 10:00:45,007 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:45] "[36mGET /devices HTTP/1.1[0m" 304 -
+2025-10-22 10:00:45,246 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:45] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:00:45,247 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:45] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:00:45,248 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:45] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:00:45,256 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:45] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:00:45,257 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:45] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:00:45,262 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:45] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:00:53,626 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:53] "[36mGET /devices HTTP/1.1[0m" 304 -
+2025-10-22 10:00:53,716 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:53] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:00:53,722 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:53] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:00:53,724 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:53] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:00:53,731 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:53] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:00:53,731 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:53] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:00:53,740 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:00:53] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:05:15,993 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:15] "GET /devices HTTP/1.1" 200 -
+2025-10-22 10:05:16,234 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:16] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:05:16,238 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:16] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:05:16,242 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:16] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:05:16,243 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:16] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:05:16,256 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:16] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:05:16,257 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:16] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:05:16,257 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:16] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 10:05:28,867 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:28] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 10:05:29,026 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:29] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:05:29,028 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:29] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:05:29,028 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:29] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:05:29,036 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:29] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 10:05:29,038 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:29] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:05:29,039 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:29] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:05:29,042 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:29] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:05:33,511 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:33] "[36mGET /devices HTTP/1.1[0m" 304 -
+2025-10-22 10:05:33,602 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:33] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:05:33,604 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:33] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:05:33,617 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:33] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:05:33,618 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:33] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:05:33,629 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:33] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 10:05:33,631 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:33] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:05:33,635 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:05:33] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:08:34,243 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:34] "GET /devices HTTP/1.1" 200 -
+2025-10-22 10:08:34,505 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:34] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:08:34,505 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:34] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:08:34,507 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:34] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:08:34,519 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:34] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:08:34,525 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:34] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 10:08:34,526 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:34] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:08:34,528 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:34] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:08:38,198 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:38] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 10:08:38,395 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:38] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:08:38,403 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:38] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:08:38,404 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:38] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:08:38,414 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:38] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:08:38,417 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:38] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:08:38,417 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:38] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:08:38,419 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:08:38] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 10:09:05,705 - backup_service - INFO - 开始执行备份任务 15
+2025-10-22 10:09:05,706 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:05] "POST /api/backup/batch HTTP/1.1" 200 -
+2025-10-22 10:09:05,707 - backup_service - INFO - 任务 15 开始备份设备 192.168.10.99
+2025-10-22 10:09:05,707 - backup_service - INFO - 开始执行备份任务 16
+2025-10-22 10:09:05,716 - backup_service - INFO - 任务 16 开始备份设备 192.168.10.98
+2025-10-22 10:09:05,716 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:05] "GET /api/backup/batch/progress HTTP/1.1" 200 -
+2025-10-22 10:09:05,734 - device_manager - INFO - 密码解密成功，长度: 8
+2025-10-22 10:09:05,756 - device_manager - INFO - 密码解密成功，长度: 8
+2025-10-22 10:09:05,757 - paramiko.transport - INFO - Connected (version 2.0, client Cisco-1.25)
+2025-10-22 10:09:05,776 - paramiko.transport - INFO - Connected (version 2.0, client Cisco-1.25)
+2025-10-22 10:09:06,194 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-22 10:09:06,397 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-22 10:09:06,419 - device_manager - INFO - 成功连接到设备 192.168.10.99
+2025-10-22 10:09:06,654 - device_manager - INFO - 成功连接到设备 192.168.10.98
+2025-10-22 10:09:06,755 - device_manager - INFO - 已断开设备 192.168.10.99 的连接
+2025-10-22 10:09:06,975 - device_manager - INFO - 已断开设备 192.168.10.98 的连接
+2025-10-22 10:09:15,424 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:15] "GET /compare HTTP/1.1" 200 -
+2025-10-22 10:09:15,573 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:15] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:09:15,590 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:15] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:09:15,591 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:15] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:09:15,598 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:15] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:09:15,599 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:15] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:09:15,601 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:15] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 10:09:15,613 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:09:15] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:11:39,421 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:39] "GET /devices HTTP/1.1" 200 -
+2025-10-22 10:11:39,736 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:39] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:11:39,739 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:39] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:11:39,742 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:39] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:11:39,748 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:39] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 10:11:39,752 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:39] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:11:39,752 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:39] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:11:39,759 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:39] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:11:41,830 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:41] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 10:11:41,997 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:41] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 10:11:42,006 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:42] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 10:11:42,010 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:42] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 10:11:42,017 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:42] "[35m[1mGET /api/system/info HTTP/1.1[0m" 500 -
+2025-10-22 10:11:42,021 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:42] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 10:11:42,023 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:42] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 10:11:42,032 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 10:11:42] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 10:12:51,669 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\api.py', reloading
+2025-10-22 10:12:51,670 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 10:12:51,673 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 10:12:51,891 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 10:12:53,081 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 10:12:53,082 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 10:12:53,083 - scheduler - INFO - 备份调度器已启动
+2025-10-22 10:12:53,091 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 10:12:53,097 - werkzeug - INFO -  * Debugger PIN: 907-116-072
