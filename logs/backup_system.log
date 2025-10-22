@@ -5176,3 +5176,18 @@ with app.app_context(). See the documentation for more information.
 2025-10-22 17:19:54,689 - apscheduler.scheduler - INFO - Scheduler has been shut down
 2025-10-22 17:19:54,691 - scheduler - INFO - 备份调度器已关闭
 2025-10-22 17:19:54,875 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 17:19:56,378 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 17:19:56,384 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 17:20:32,600 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\create_scheduler_tables.py', reloading
+2025-10-22 17:20:32,809 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 17:20:34,040 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 17:20:34,045 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 17:21:27,358 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\app.py', reloading
+2025-10-22 17:21:27,575 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 17:21:32,975 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 17:21:46,671 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 17:21:49,985 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 17:21:54,138 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 17:21:57,274 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 17:22:03,526 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 17:22:10,976 - werkzeug - INFO -  * Restarting with stat

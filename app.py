@@ -24,10 +24,11 @@ import shutil
 from pathlib import Path
 
 # 导入自定义模块
-from models import db, User, Device, BackupTask, BackupLog
+from models import db, User, Device, BackupTask, BackupLog, ScheduledTask, TaskExecution
 from device_manager import DeviceManager
 from backup_service import BackupService
 from scheduler import BackupScheduler
+from task_scheduler import task_scheduler
 
 # 配置日志
 logging.basicConfig(
@@ -94,6 +95,10 @@ app = create_app()
 device_manager = DeviceManager()
 backup_service = BackupService()
 scheduler = BackupScheduler()
+
+# 初始化任务调度器
+task_scheduler.init_app(app)
+task_scheduler.start()
 
 # 任务队列和线程池
 task_queue = queue.Queue()

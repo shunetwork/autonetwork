@@ -11,6 +11,7 @@ import json
 
 from models import db, ScheduledTask, TaskExecution
 from scheduler_utils import FrequencyConfig, CronValidator, ScheduleHelper
+from task_scheduler import task_scheduler
 
 scheduler_bp = Blueprint('scheduler', __name__)
 
@@ -105,6 +106,10 @@ def create_scheduled_task():
         db.session.add(task)
         db.session.commit()
         
+        # 添加到任务调度器
+        if task.is_active:
+            task_scheduler.add_job(task)
+        
         return jsonify({
             'success': True,
             'message': '计划任务创建成功',
@@ -170,6 +175,9 @@ def update_scheduled_task(task_id):
         task.updated_at = datetime.utcnow()
         db.session.commit()
         
+        # 更新任务调度器
+        task_scheduler.update_task(task)
+        
         return jsonify({
             'success': True,
             'message': '计划任务更新成功',
@@ -198,6 +206,9 @@ def delete_scheduled_task(task_id):
         
         # 删除关联的执行记录
         TaskExecution.query.filter_by(scheduled_task_id=task_id).delete()
+        
+        # 从任务调度器移除
+        task_scheduler.remove_job(task_id)
         
         # 删除计划任务
         db.session.delete(task)
@@ -231,6 +242,9 @@ def toggle_scheduled_task(task_id):
         task.is_active = not task.is_active
         task.updated_at = datetime.utcnow()
         db.session.commit()
+        
+        # 更新任务调度器
+        task_scheduler.update_task(task)
         
         return jsonify({
             'success': True,
@@ -291,4 +305,35 @@ def get_scheduler_options():
         return jsonify({
             'success': False,
             'error': f'获取选项失败: {str(e)}'
+        }), 500
+
+
+@scheduler_bp.route('/tasks/<int:task_id>/status', methods=['GET'])
+@login_required
+def get_task_status(task_id):
+    """获取任务调度状态"""
+    try:
+        task = ScheduledTask.query.get(task_id)
+        if not task:
+            return jsonify({
+                'success': False,
+                'error': '计划任务不存在'
+            }), 404
+        
+        # 获取调度器状态
+        job_status = task_scheduler.get_job_status(task_id)
+        
+        return jsonify({
+            'success': True,
+            'task_id': task_id,
+            'is_active': task.is_active,
+            'scheduler_status': job_status,
+            'last_run': task.last_run.isoformat() if task.last_run else None,
+            'next_run': task.next_run.isoformat() if task.next_run else None
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'获取任务状态失败: {str(e)}'
         }), 500
