@@ -1,0 +1,90 @@
+# Git乱码提交信息修复指南
+
+## 需要修复的乱码提交信息
+
+### 当前乱码提交：
+- 20e44e8 ECHO is off.
+- 7678cbc ECHO is off.
+- 9fc7e48 ECHO is off.
+
+### 正确的提交信息：
+修正乱码提交信息：清理临时文件、更新系统日志、添加Docker部署配置
+
+## 修复方法
+
+### 方法1：使用git rebase（推荐）
+
+1. 设置Git配置：
+```bash
+git config --global core.quotepath false
+git config --global i18n.commitencoding utf-8
+git config --global i18n.logoutputencoding utf-8
+git config --global core.precomposeunicode true
+```
+
+2. 启动交互式rebase：
+```bash
+git rebase -i HEAD~15
+```
+
+3. 在编辑器中：
+   - 找到包含"ECHO is off"的提交行
+   - 将 'pick' 改为 'reword' 或 'r'
+   - 保存并退出编辑器
+
+4. 在下一个编辑器中输入正确的中文提交信息：
+```
+修正乱码提交信息：清理临时文件、更新系统日志、添加Docker部署配置
+```
+
+5. 保存并退出
+6. 重复步骤4-5直到所有提交都修复完成
+
+### 方法2：使用git commit --amend（仅修复最近提交）
+
+```bash
+git commit --amend -m "修正乱码提交信息：清理临时文件、更新系统日志、添加Docker部署配置"
+```
+
+### 方法3：使用git filter-branch（批量修复）
+
+1. 创建修复脚本：
+```bash
+#!/bin/sh
+if echo "$1" | grep -q "ECHO is off"; then
+  echo "修正乱码提交信息：清理临时文件、更新系统日志、添加Docker部署配置"
+else
+  cat
+fi
+```
+
+2. 执行修复：
+```bash
+git filter-branch --msg-filter "fix_commit_msg.sh" -- --all
+```
+
+## 推送修复结果
+
+修复完成后，推送修复后的历史：
+```bash
+git push origin master --force-with-lease
+```
+
+## 验证修复结果
+
+查看修复后的提交历史：
+```bash
+git log --oneline -15
+```
+
+应该看到类似以下输出：
+```
+修正乱码提交信息：清理临时文件、更新系统日志、添加Docker部署配置
+```
+
+## 注意事项
+
+1. 修复前请确保重要数据已备份
+2. 如果多人协作，请通知其他成员
+3. 修复后需要使用 --force-with-lease 推送
+4. 建议使用方法1（git rebase）进行修复

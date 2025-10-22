@@ -1,27 +1,28 @@
 @echo off
-REM 简单修复乱码提交信息的脚本
+REM 实用修复乱码提交信息的脚本
 chcp 65001 >nul
 
-echo 正在修复Git提交历史中的乱码信息...
+echo ========================================
+echo Git乱码提交信息修复脚本 (实用版)
+echo ========================================
 echo.
 
-REM 设置Git配置
+echo 正在设置Git配置...
 git config --global core.quotepath false
 git config --global i18n.commitencoding utf-8
 git config --global i18n.logoutputencoding utf-8
 git config --global core.precomposeunicode true
-
-echo Git配置已设置完成
+echo Git配置设置完成！
 echo.
 
-echo 当前提交历史：
-git log --oneline -10
+echo 当前需要修复的乱码提交：
+git log --oneline --grep="ECHO is off" -10
 echo.
 
-echo 开始修复乱码提交信息...
+echo 开始修复...
 echo.
 
-echo 方法1：使用git rebase修复历史提交
+echo 使用git rebase修复提交信息...
 echo 这将启动交互式rebase，请按照以下步骤操作：
 echo 1. 在编辑器中，找到要修改的提交行（包含"ECHO is off"的提交）
 echo 2. 将 'pick' 改为 'reword' 或 'r'
@@ -39,14 +40,18 @@ REM 启动交互式rebase
 git rebase -i HEAD~15
 
 echo.
+echo ========================================
 echo 修复完成！
-echo 请检查提交历史：
+echo ========================================
+echo.
+
+echo 修复后的提交历史：
 git log --oneline -15
 
 echo.
 echo 如果修复成功，请运行以下命令推送到远程仓库：
 echo git push origin master --force-with-lease
-
 echo.
+
 echo 按任意键退出...
 pause
