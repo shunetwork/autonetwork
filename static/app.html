@@ -1899,13 +1899,20 @@
                     }
                     
                     try {
+                        console.log('正在加载设备备份，设备ID:', compareForm.value.device_id);
                         const response = await fetch(`/api/backup/device/${compareForm.value.device_id}`);
                         const data = await response.json();
+                        console.log('设备备份API响应:', data);
                         if (data.success) {
-                            deviceBackups.value = data.backups;
+                            deviceBackups.value = data.tasks;
+                            console.log('设备备份数据已加载:', deviceBackups.value.length, '个备份');
+                        } else {
+                            console.error('获取设备备份失败:', data.error);
+                            ElMessage.error('获取设备备份失败: ' + (data.error || '未知错误'));
                         }
                     } catch (error) {
                         console.error('加载设备备份失败:', error);
+                        ElMessage.error('网络错误，请稍后重试');
                     }
                 };
 
