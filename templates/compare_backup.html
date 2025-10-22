@@ -1,0 +1,787 @@
+{% extends "base.html" %}
+
+{% block title %}配置对比 - Cisco设备配置备份系统{% endblock %}
+
+{% block head %}
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<script>
+// 简化强制刷新逻辑 - 只在没有版本参数时刷新一次
+console.log('页面加载，检查强制刷新...');
+const urlParams = new URLSearchParams(window.location.search);
+const hasVersion = urlParams.has('v') || urlParams.has('force_reload');
+if (!hasVersion) {
+    console.log('添加版本参数强制刷新');
+    window.location.href = window.location.href + (window.location.search ? '&' : '?') + 'v=' + new Date().getTime();
+    return; // 立即返回，避免继续执行
+} else {
+    console.log('已添加版本参数，跳过强制刷新');
+}
+
+// 清除所有可能的缓存
+if ('caches' in window) {
+    caches.keys().then(function(names) {
+        for (let name of names) {
+            caches.delete(name);
+        }
+        console.log('已清除所有缓存');
+    });
+}
+
+// 强制重新加载CSS和JS
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM加载完成，强制刷新资源...');
+    // 重新加载CSS
+    const links = document.querySelectorAll('link[rel="stylesheet"]');
+    links.forEach(link => {
+        const href = link.href;
+        link.href = href + '?v=' + new Date().getTime();
+    });
+    
+    // 重新加载JS
+    const scripts = document.querySelectorAll('script[src]');
+    scripts.forEach(script => {
+        const src = script.src;
+        if (src && !src.includes('?')) {
+            script.src = src + '?v=' + new Date().getTime();
+        }
+    });
+});
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">配置对比</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button class="btn btn-sm btn-outline-primary" id="compareBtn" disabled>
+            <i class="fas fa-exchange-alt"></i> 开始对比
+        </button>
+        <button class="btn btn-sm btn-outline-secondary" id="clearSelectionBtn">
+            <i class="fas fa-times"></i> 清除选择
+        </button>
+    </div>
+</div>
+
+<div class="row">
+    <!-- 备份任务选择 -->
+    <div class="col-lg-12 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-list"></i> 选择要对比的备份任务
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- 设备选择 -->
+                <div class="row mb-3">
+                    <div class="col-md-12">
+                        <label class="form-label">
+                            <i class="fas fa-server"></i> 选择设备
+                        </label>
+                        <select class="form-select" id="deviceSelect">
+                            <option value="">请选择设备...</option>
+                            {% for device in devices %}
+                            <option value="{{ device.id }}">{{ device.alias or device.ip_address }} ({{ device.ip_address }})</option>
+                            {% endfor %}
+                        </select>
+                        <small class="form-text text-muted">选择设备后，将显示该设备的所有备份任务</small>
+                    </div>
+                </div>
+                
+                <!-- 备份任务选择 -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <label class="form-label">第一个备份（基准）</label>
+                        <select class="form-select" id="task1Select" disabled>
+                            <option value="">请先选择设备...</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">第二个备份（对比）</label>
+                        <select class="form-select" id="task2Select" disabled>
+                            <option value="">请先选择设备...</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-md-6">
+                        <button class="btn btn-outline-info btn-sm" id="compareLatestBtn" disabled>
+                            <i class="fas fa-clock"></i> 对比最新两个备份
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" id="ignoreWhitespace" checked>
+                            <label class="form-check-label" for="ignoreWhitespace">
+                                忽略空白字符差异
+                            </label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 对比结果 -->
+<div class="row" id="compareResult" style="display: none;">
+    <div class="col-lg-12">
+        <div class="card shadow">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">
+                    <i class="fas fa-code-branch"></i> 对比结果
+                </h5>
+                <div class="btn-group btn-group-sm" role="group">
+                    <button class="btn btn-outline-secondary" id="downloadDiffBtn" title="下载差异文件">
+                        <i class="fas fa-download"></i>
+                    </button>
+                    <button class="btn btn-outline-secondary" id="toggleSideBySideBtn" title="切换显示模式">
+                        <i class="fas fa-columns"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="card-body">
+                <!-- 差异统计 -->
+                <div class="row mb-3" id="diffSummary">
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted">总变更</h6>
+                                <h4 class="text-primary" id="totalChanges">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted">新增行</h6>
+                                <h4 class="text-success" id="addedLines">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted">删除行</h6>
+                                <h4 class="text-danger" id="removedLines">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="card bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted">修改行</h6>
+                                <h4 class="text-warning" id="modifiedLines">0</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 差异内容 -->
+                <div class="diff-container" id="diffContent" style="height: 70vh; max-height: 800px; overflow-y: auto; border: 1px solid #dee2e6; border-radius: 0.375rem; background-color: #f8f9fa; padding: 15px;">
+                    <div class="text-center text-muted py-5">
+                        <i class="fas fa-code-branch fa-2x mb-3"></i>
+                        <p>请选择要对比的备份任务</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 加载中模态框 -->
+<div class="modal fade" id="loadingModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-body text-center py-4">
+                <div class="spinner-border text-primary mb-3" role="status">
+                    <span class="visually-hidden">加载中...</span>
+                </div>
+                <p class="mb-0">正在分析配置差异...</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let currentCompareData = null;
+let sideBySideMode = false;
+
+// 全局函数：强制关闭所有模态框
+function forceCloseAllModals() {
+    $('.modal').modal('hide');
+    $('.modal').removeClass('show');
+    $('.modal-backdrop').remove();
+    $('body').removeClass('modal-open');
+    $('body').css('padding-right', '');
+}
+
+$(document).ready(function() {
+    console.log('文档准备就绪，开始初始化...');
+    
+    // 页面已通过<head>中的逻辑处理强制刷新，直接开始初始化
+    console.log('开始正常初始化页面...');
+    
+    // 清理可能遗留的模态框
+    forceCloseAllModals();
+    
+    // 添加键盘快捷键：ESC键关闭模态框
+    $(document).keydown(function(e) {
+        if (e.keyCode === 27) { // ESC键
+            forceCloseAllModals();
+        }
+    });
+    
+    // 强制显示设备选择部分
+    console.log('强制显示设备选择部分...');
+    $('#deviceSelect').closest('.row').show();
+    $('#deviceSelect').show();
+    console.log('设备选择区域强制显示完成');
+    
+    // 检查是否已有设备数据
+    const deviceSelect = $('#deviceSelect');
+    const hasDevices = deviceSelect.find('option').length > 1; // 除了默认选项外还有其他选项
+    
+    if (hasDevices) {
+        console.log('服务器端已预加载设备数据，跳过JavaScript加载');
+        console.log('设备选项数量:', deviceSelect.find('option').length);
+    } else {
+        console.log('开始通过JavaScript加载设备...');
+        loadDevices();
+    }
+    
+    loadBackupTasks();
+    
+    // 检查URL参数
+    const task1Id = urlParams.get('task1');
+    const task2Id = urlParams.get('task2');
+    
+    if (task1Id) {
+        $('#task1Select').val(task1Id);
+    }
+    if (task2Id) {
+        $('#task2Select').val(task2Id);
+    }
+    
+    // 如果两个任务都选择了，自动开始对比
+    if (task1Id && task2Id) {
+        compareBackups(task1Id, task2Id);
+    }
+    
+    // 开始对比
+    $('#compareBtn').click(function() {
+        const task1Id = $('#task1Select').val();
+        const task2Id = $('#task2Select').val();
+        
+        if (!task1Id || !task2Id) {
+            alert('请选择两个备份任务进行对比');
+            return;
+        }
+        
+        if (task1Id === task2Id) {
+            alert('不能选择相同的备份任务');
+            return;
+        }
+        
+        compareBackups(task1Id, task2Id);
+    });
+    
+    // 对比最新备份
+    $('#compareLatestBtn').click(function() {
+        const deviceId = $('#deviceSelect').val();
+        if (deviceId) {
+            compareLatestBackups(deviceId);
+        } else {
+            alert('请先选择设备');
+        }
+    });
+    
+    // 清除选择
+    $('#clearSelectionBtn').click(function() {
+        $('#deviceSelect').val('');
+        $('#task1Select').val('').prop('disabled', true);
+        $('#task2Select').val('').prop('disabled', true);
+        $('#compareBtn').prop('disabled', true);
+        $('#compareLatestBtn').prop('disabled', true);
+        $('#compareResult').hide();
+    });
+    
+    // 设备选择变化
+    $('#deviceSelect').on('change', function() {
+        const deviceId = $(this).val();
+        console.log('选择设备ID:', deviceId);
+        console.log('设备选择元素:', this);
+        console.log('设备选择值:', $(this).val());
+        
+        if (deviceId) {
+            console.log('设备ID存在，开始加载备份任务...');
+            // 启用备份任务选择
+            $('#task1Select, #task2Select').prop('disabled', false);
+            $('#compareLatestBtn').prop('disabled', false);
+            
+            // 加载该设备的备份任务
+            console.log('调用loadDeviceBackupTasks函数...');
+            loadDeviceBackupTasks(deviceId);
+        } else {
+            console.log('设备ID不存在，禁用备份任务选择...');
+            // 禁用备份任务选择
+            $('#task1Select, #task2Select').prop('disabled', true).val('');
+            $('#compareLatestBtn').prop('disabled', true);
+            $('#compareBtn').prop('disabled', true);
+        }
+    });
+    
+    // 强制触发设备选择事件（如果已经有值）
+    const currentDeviceId = $('#deviceSelect').val();
+    if (currentDeviceId) {
+        console.log('页面加载时发现已选择设备:', currentDeviceId);
+        $('#deviceSelect').trigger('change');
+    }
+    
+    // 选择变化
+    $('#task1Select, #task2Select').change(function() {
+        const task1Id = $('#task1Select').val();
+        const task2Id = $('#task2Select').val();
+        $('#compareBtn').prop('disabled', !task1Id || !task2Id);
+    });
+    
+    // 下载差异文件
+    $('#downloadDiffBtn').click(function() {
+        if (currentCompareData) {
+            downloadDiffFile();
+        }
+    });
+    
+    // 切换显示模式
+    $('#toggleSideBySideBtn').click(function() {
+        sideBySideMode = !sideBySideMode;
+        if (currentCompareData) {
+            displayDiff(currentCompareData);
+        }
+    });
+});
+
+function loadDevices() {
+    console.log('开始加载设备列表...');
+    console.log('设备选择元素存在:', $('#deviceSelect').length > 0);
+    console.log('设备选择元素可见:', $('#deviceSelect').is(':visible'));
+    
+    // 确保设备选择区域可见
+    $('#deviceSelect').closest('.row').show();
+    $('#deviceSelect').show();
+    
+    fetch('/api/device/list')
+    .then(response => {
+        console.log('设备API响应状态:', response.status);
+        return response.json();
+    })
+    .then(data => {
+        console.log('设备API返回数据:', data);
+        if (data.success) {
+            const devices = data.devices.filter(device => device.is_active);
+            console.log('活跃设备数量:', devices.length);
+            const deviceSelect = $('#deviceSelect');
+            
+            // 清空并重新填充下拉框
+            deviceSelect.empty();
+            deviceSelect.append('<option value="">请选择设备...</option>');
+            
+            if (devices.length === 0) {
+                deviceSelect.append('<option value="" disabled>暂无活跃设备</option>');
+                console.log('没有活跃设备');
+            } else {
+                devices.forEach((device, index) => {
+                    const deviceName = device.alias || device.ip_address || '未知设备';
+                    const option = `<option value="${device.id}">${deviceName} (${device.ip_address})</option>`;
+                    deviceSelect.append(option);
+                    console.log(`添加设备${index + 1}: ${deviceName} (${device.ip_address})`);
+                });
+            }
+            
+            console.log('设备加载完成，下拉框选项数量:', deviceSelect.find('option').length);
+            console.log('设备选择元素现在可见:', deviceSelect.is(':visible'));
+        } else {
+            console.error('设备API返回失败:', data);
+            $('#deviceSelect').append('<option value="" disabled>加载设备失败</option>');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading devices:', error);
+        $('#deviceSelect').append('<option value="" disabled>网络错误</option>');
+    });
+}
+
+function loadDeviceBackupTasks(deviceId) {
+    console.log('开始加载设备备份任务，设备ID:', deviceId);
+    console.log('API URL:', `/api/backup/device/${deviceId}`);
+    
+    // 显示加载状态
+    const select1 = $('#task1Select');
+    const select2 = $('#task2Select');
+    select1.empty().append('<option value="">加载中...</option>');
+    select2.empty().append('<option value="">加载中...</option>');
+    
+    fetch(`/api/backup/device/${deviceId}`)
+    .then(response => {
+        console.log('API响应状态:', response.status);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('设备备份任务API返回数据:', data);
+        if (data.success) {
+            const tasks = data.tasks.filter(task => task.status === 'success');
+            console.log('设备成功任务数量:', tasks.length);
+            
+            console.log('清空并重新填充下拉框...');
+            select1.empty().append('<option value="">请选择备份任务...</option>');
+            select2.empty().append('<option value="">请选择备份任务...</option>');
+            
+            // 存储任务信息供后续使用
+            window.backupTasks = tasks;
+            
+            if (tasks.length === 0) {
+                console.log('没有成功的备份任务');
+                select1.append('<option value="" disabled>暂无备份任务</option>');
+                select2.append('<option value="" disabled>暂无备份任务</option>');
+            } else {
+                tasks.forEach((task, index) => {
+                    console.log(`任务${index + 1}:`, task);
+                    const createdTime = new Date(task.created_at).toLocaleString();
+                    const option = `<option value="${task.id}">${createdTime}</option>`;
+                    select1.append(option);
+                    select2.append(option);
+                });
+            }
+            
+            console.log('设备备份任务加载完成，下拉框选项数量:', select1.find('option').length);
+            console.log('下拉框现在应该可以选择了');
+        } else {
+            console.error('设备备份任务API返回失败:', data);
+            select1.empty().append('<option value="" disabled>加载失败</option>');
+            select2.empty().append('<option value="" disabled>加载失败</option>');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading device backup tasks:', error);
+        select1.empty().append('<option value="" disabled>网络错误</option>');
+        select2.empty().append('<option value="" disabled>网络错误</option>');
+    });
+}
+
+function loadBackupTasks() {
+    console.log('开始加载备份任务...');
+    fetch('/api/backup/recent')
+    .then(response => response.json())
+    .then(data => {
+        console.log('API返回数据:', data);
+        if (data.success) {
+            const tasks = data.tasks.filter(task => task.status === 'success');
+            console.log('成功任务数量:', tasks.length);
+            
+            // 存储任务信息供后续使用
+            window.backupTasks = tasks;
+            console.log('任务加载完成');
+        } else {
+            console.error('API返回失败:', data);
+        }
+    })
+    .catch(error => {
+        console.error('Error loading backup tasks:', error);
+    });
+}
+
+function getDeviceIdFromTask(taskId) {
+    return new Promise((resolve) => {
+        if (window.backupTasks) {
+            const task = window.backupTasks.find(t => t.id == taskId);
+            if (task && task.device_id) {
+                console.log('从缓存获取设备ID:', task.device_id);
+                resolve(task.device_id);
+            } else {
+                console.log('缓存中未找到设备ID');
+                resolve(null);
+            }
+        } else {
+            console.log('缓存不可用，从API获取设备ID');
+            // 如果任务信息不可用，尝试从API获取
+            fetch('/api/backup/recent')
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    const task = data.tasks.find(t => t.id == taskId);
+                    const deviceId = task ? task.device_id : null;
+                    console.log('从API获取设备ID:', deviceId);
+                    resolve(deviceId);
+                } else {
+                    resolve(null);
+                }
+            })
+            .catch(() => resolve(null));
+        }
+    });
+}
+
+function compareBackups(task1Id, task2Id) {
+    $('#loadingModal').modal('show');
+    
+    fetch(`/api/backup/compare/${task1Id}/${task2Id}`)
+    .then(response => response.json())
+    .then(data => {
+        // 强制隐藏模态框
+        forceCloseAllModals();
+        
+        if (data.success) {
+            currentCompareData = data;
+            displayCompareResult(data);
+            displayDiff(data);
+        } else {
+            alert('对比失败：' + data.error);
+        }
+    })
+    .catch(error => {
+        // 强制隐藏模态框
+        forceCloseAllModals();
+        
+        console.error('Error comparing backups:', error);
+        alert('对比请求失败，请稍后重试');
+    });
+}
+
+function compareLatestBackups(deviceId) {
+    $('#loadingModal').modal('show');
+    
+    // 使用快速比较API
+    fetch(`/api/backup/compare/quick/${deviceId}`)
+    .then(response => response.json())
+    .then(data => {
+        // 强制隐藏模态框
+        forceCloseAllModals();
+        
+        if (data.success) {
+            currentCompareData = data;
+            displayCompareResult(data);
+            displayDiff(data);
+        } else {
+            alert('对比失败：' + data.error);
+        }
+    })
+    .catch(error => {
+        // 强制隐藏模态框
+        forceCloseAllModals();
+        
+        console.error('Error comparing latest backups:', error);
+        alert('对比请求失败，请稍后重试');
+    });
+}
+
+function displayCompareResult(data) {
+    // 显示统计信息
+    const summary = data.diff.summary;
+    $('#totalChanges').text(summary.total_changes);
+    $('#addedLines').text(summary.added_lines);
+    $('#removedLines').text(summary.removed_lines);
+    $('#modifiedLines').text(summary.modified_lines);
+    
+    // 显示任务信息
+    const task1 = data.task1;
+    const task2 = data.task2;
+    
+    // 显示对比结果区域
+    $('#compareResult').show();
+}
+
+function displayDiff(data) {
+    const diffContent = $('#diffContent');
+    const diff = data.diff;
+    
+    if (!diff.summary.has_changes) {
+        diffContent.html(`
+            <div class="text-center text-success py-5">
+                <i class="fas fa-check-circle fa-2x mb-3"></i>
+                <p>两个配置文件完全相同，没有差异</p>
+            </div>
+        `);
+        return;
+    }
+    
+    let html = '';
+    
+    if (sideBySideMode) {
+        // 并排显示模式
+        html = '<div class="row"><div class="col-md-6"><h6>旧配置</h6><pre class="diff-old">';
+        html += escapeHtml(diff.raw_diff);
+        html += '</pre></div><div class="col-md-6"><h6>新配置</h6><pre class="diff-new">';
+        html += escapeHtml(diff.raw_diff);
+        html += '</pre></div></div>';
+    } else {
+        // 统一差异显示模式
+        html = '<div class="diff-unified" style="font-family: monospace; white-space: pre-wrap; word-break: break-all;">';
+        diff.diff_blocks.forEach(block => {
+            html += `<div class="diff-block">`;
+            html += `<div class="diff-header">${escapeHtml(block.header)}</div>`;
+            html += `<div class="diff-changes">`;
+            
+            block.changes.forEach(change => {
+                let className = '';
+                let prefix = '';
+                
+                switch (change.type) {
+                    case 'added':
+                        className = 'diff-added';
+                        prefix = '+';
+                        break;
+                    case 'removed':
+                        className = 'diff-removed';
+                        prefix = '-';
+                        break;
+                    case 'context':
+                        className = 'diff-context';
+                        prefix = ' ';
+                        break;
+                }
+                
+                html += `<div class="diff-line ${className}">`;
+                html += `<span class="diff-prefix">${prefix}</span>`;
+                html += `<span class="diff-content">${escapeHtml(change.content)}</span>`;
+                html += '</div>';
+            });
+            
+            html += '</div></div>';
+        });
+        html += '</div>';
+    }
+    
+    diffContent.html(html);
+    
+    // 确保滚动条可见
+    if (diffContent[0].scrollHeight > diffContent[0].clientHeight) {
+        diffContent.css('border', '2px solid #007bff');
+        diffContent.append('<div class="text-center text-muted mt-2"><small><i class="fas fa-arrows-alt-v"></i> 可滚动查看更多内容</small></div>');
+    }
+}
+
+function downloadDiffFile() {
+    if (!currentCompareData) return;
+    
+    const diff = currentCompareData.diff;
+    const blob = new Blob([diff.raw_diff], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `config_diff_${currentCompareData.task1.id}_${currentCompareData.task2.id}.diff`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+}
+
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+</script>
+
+<style>
+.diff-container {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    line-height: 1.4;
+}
+
+.diff-block {
+    margin-bottom: 1rem;
+}
+
+.diff-header {
+    background-color: #f8f9fa;
+    padding: 0.5rem;
+    font-weight: bold;
+    border-left: 4px solid #007bff;
+}
+
+.diff-line {
+    padding: 0.25rem 0.5rem;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.diff-container {
+    scrollbar-width: thin;
+    scrollbar-color: #6c757d #f8f9fa;
+}
+
+.diff-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.diff-container::-webkit-scrollbar-track {
+    background: #f8f9fa;
+    border-radius: 4px;
+}
+
+.diff-container::-webkit-scrollbar-thumb {
+    background: #6c757d;
+    border-radius: 4px;
+}
+
+.diff-container::-webkit-scrollbar-thumb:hover {
+    background: #495057;
+}
+
+.diff-added {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.diff-removed {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.diff-context {
+    background-color: #ffffff;
+    color: #333333;
+}
+
+.diff-prefix {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+.diff-content {
+    margin-left: 10px;
+}
+
+.diff-old {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 1rem;
+    margin: 0;
+}
+
+.diff-new {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 1rem;
+    margin: 0;
+}
+
+.diff-unified {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    padding: 1rem;
+    margin: 0;
+    white-space: pre-wrap;
+}
+</style>
+{% endblock %}

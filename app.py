@@ -100,8 +100,8 @@ executor = ThreadPoolExecutor(max_workers=app.config['MAX_CONCURRENT_BACKUPS'])
 @app.route('/')
 @login_required
 def index():
-    """首页 - Vue 3前端"""
-    return send_from_directory('static', 'index.html')
+    """首页 - Vue 3 SPA"""
+    return send_from_directory('static', 'app.html')
 
 @app.route('/backup/single')
 @login_required
@@ -112,14 +112,14 @@ def backup_single():
 @app.route('/backup/batch')
 @login_required
 def backup_batch():
-    """批量备份页面 - Vue 3前端"""
-    return send_from_directory('static', 'index.html')
+    """批量备份页面 - Vue 3 SPA"""
+    return send_from_directory('static', 'app.html')
 
 @app.route('/history')
 @login_required
 def history():
-    """备份历史页面 - Vue 3前端"""
-    return send_from_directory('static', 'index.html')
+    """备份历史页面 - Vue 3 SPA"""
+    return send_from_directory('static', 'app.html')
 
 @app.route('/devices')
 @login_required
@@ -130,14 +130,14 @@ def devices():
 @app.route('/settings')
 @login_required
 def settings():
-    """系统设置页面 - Vue 3前端"""
-    return send_from_directory('static', 'index.html')
+    """系统设置页面 - Vue 3 SPA"""
+    return send_from_directory('static', 'app.html')
 
 @app.route('/logs')
 @login_required
 def logs():
-    """日志查看页面 - Vue 3前端"""
-    return send_from_directory('static', 'index.html')
+    """日志查看页面 - Vue 3 SPA"""
+    return send_from_directory('static', 'app.html')
 
 @app.route('/compare')
 @login_required
