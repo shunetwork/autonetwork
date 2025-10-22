@@ -444,10 +444,40 @@
             line-height: 1.2;
         }
         
+        /* 最近备份记录表格优化样式 */
+        .recent-backups-table {
+            font-size: 14px;
+        }
+        
+        .recent-backups-table .el-table__header th {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 12px 8px;
+        }
+        
+        .recent-backups-table .el-table__body td {
+            font-size: 13px;
+            padding: 10px 8px;
+            line-height: 1.4;
+        }
+        
+        .recent-backups-table .el-table__body td .cell {
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .recent-backups-table .el-tag {
+            font-size: 11px;
+            padding: 2px 6px;
+            height: auto;
+            line-height: 1.2;
+        }
+        
         /* 表格响应式优化 */
         @media (max-width: 1200px) {
             .device-table .el-table__body td,
-            .history-table .el-table__body td {
+            .history-table .el-table__body td,
+            .recent-backups-table .el-table__body td {
                 font-size: 12px;
                 padding: 8px 6px;
             }
@@ -797,22 +827,22 @@
                         最近备份记录
                     </div>
                     <div class="card-body">
-                        <el-table :data="recentBackups" v-loading="backupLoading" stripe>
-                            <el-table-column prop="device_alias" label="设备" width="120"></el-table-column>
-                            <el-table-column prop="backup_command" label="命令" width="150"></el-table-column>
-                            <el-table-column prop="status" label="状态" width="100">
+                        <el-table :data="recentBackups" v-loading="backupLoading" stripe class="recent-backups-table">
+                            <el-table-column prop="device_alias" label="设备" width="100" show-overflow-tooltip></el-table-column>
+                            <el-table-column prop="backup_command" label="命令" width="200" show-overflow-tooltip></el-table-column>
+                            <el-table-column prop="status" label="状态" width="80" align="center">
                                 <template #default="scope">
-                                    <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'">
+                                    <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'" size="small">
                                         {{ scope.row.status === 'success' ? '成功' : '失败' }}
                                     </el-tag>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="created_at" label="创建时间" width="160">
+                            <el-table-column prop="created_at" label="创建时间" width="200" show-overflow-tooltip>
                                 <template #default="scope">
                                     {{ formatTime(scope.row.created_at) }}
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="duration" label="耗时" width="80">
+                            <el-table-column prop="duration" label="耗时" width="100" align="center">
                                 <template #default="scope">
                                     {{ scope.row.duration ? scope.row.duration.toFixed(2) + 's' : '-' }}
                                 </template>
