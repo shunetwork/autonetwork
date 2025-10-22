@@ -4816,3 +4816,12 @@ with app.app_context(). See the documentation for more information.
 2025-10-22 16:17:58,121 - werkzeug - WARNING -  * Debugger is active!
 2025-10-22 16:17:58,125 - werkzeug - INFO -  * Debugger PIN: 907-116-072
 2025-10-22 16:19:34,660 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:19:34] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 16:53:11,601 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:53:11] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 16:53:31,415 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:53:31] "GET /compare HTTP/1.1" 200 -
+2025-10-22 16:53:31,715 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:53:31] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 16:53:31,717 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:53:31] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 16:53:31,733 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:53:31] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 16:53:31,745 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:53:31] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 16:53:31,746 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:53:31] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 16:53:31,759 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:53:31] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 16:53:31,782 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:53:31] "GET /api/system/info HTTP/1.1" 200 -
