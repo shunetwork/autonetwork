@@ -579,6 +579,240 @@
                 </div>
             </div>
 
+            <!-- 批量备份页面 -->
+            <div v-else-if="currentPage === 'batch-backup'">
+                <div class="page-header">
+                    <div class="page-title">
+                        <i class="el-icon-files"></i>
+                        批量备份
+                    </div>
+                    <div class="page-actions">
+                        <el-button type="primary" @click="startBatchBackup" :loading="batchLoading">
+                            <i class="el-icon-play"></i>
+                            开始批量备份
+                        </el-button>
+                        <el-button @click="refreshBatchData">
+                            <i class="el-icon-refresh"></i>
+                            刷新
+                        </el-button>
+                    </div>
+                </div>
+
+                <!-- 批量备份配置 -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="el-icon-setting"></i>
+                        批量备份配置
+                    </div>
+                    <div class="card-body">
+                        <el-form :model="batchForm" label-width="120px">
+                            <el-form-item label="选择设备" required>
+                                <el-select v-model="batchForm.device_ids" multiple placeholder="请选择要备份的设备" style="width: 100%">
+                                    <el-option 
+                                        v-for="device in devices" 
+                                        :key="device.id" 
+                                        :label="`${device.alias} (${device.ip_address})`" 
+                                        :value="device.id">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="备份命令" required>
+                                <el-input v-model="batchForm.command" placeholder="请输入备份命令"></el-input>
+                            </el-form-item>
+                            <el-form-item label="并发数量">
+                                <el-input-number v-model="batchForm.concurrent" :min="1" :max="10"></el-input-number>
+                            </el-form-item>
+                            <el-form-item label="重试次数">
+                                <el-input-number v-model="batchForm.retry_count" :min="0" :max="5"></el-input-number>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </div>
+
+                <!-- 批量备份进度 -->
+                <div class="content-card" v-if="batchProgress.length > 0">
+                    <div class="card-header">
+                        <i class="el-icon-time"></i>
+                        备份进度
+                    </div>
+                    <div class="card-body">
+                        <el-table :data="batchProgress" stripe>
+                            <el-table-column prop="device_alias" label="设备" width="120"></el-table-column>
+                            <el-table-column prop="status" label="状态" width="100">
+                                <template #default="scope">
+                                    <el-tag :type="getStatusType(scope.row.status)">
+                                        {{ getStatusText(scope.row.status) }}
+                                    </el-tag>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="progress" label="进度" width="200">
+                                <template #default="scope">
+                                    <el-progress :percentage="scope.row.progress" :status="scope.row.status === 'success' ? 'success' : scope.row.status === 'failed' ? 'exception' : ''"></el-progress>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="message" label="消息" show-overflow-tooltip></el-table-column>
+                        </el-table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 备份历史页面 -->
+            <div v-else-if="currentPage === 'history'">
+                <div class="page-header">
+                    <div class="page-title">
+                        <i class="el-icon-time"></i>
+                        备份历史
+                    </div>
+                    <div class="page-actions">
+                        <el-button @click="refreshHistory">
+                            <i class="el-icon-refresh"></i>
+                            刷新
+                        </el-button>
+                    </div>
+                </div>
+
+                <!-- 历史记录 -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="el-icon-document"></i>
+                        备份历史记录
+                    </div>
+                    <div class="card-body">
+                        <el-table :data="historyList" v-loading="historyLoading" stripe>
+                            <el-table-column prop="device_alias" label="设备" width="120"></el-table-column>
+                            <el-table-column prop="backup_command" label="命令" width="150"></el-table-column>
+                            <el-table-column prop="status" label="状态" width="100">
+                                <template #default="scope">
+                                    <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'">
+                                        {{ scope.row.status === 'success' ? '成功' : '失败' }}
+                                    </el-tag>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="created_at" label="创建时间" width="160">
+                                <template #default="scope">
+                                    {{ formatTime(scope.row.created_at) }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="duration" label="耗时" width="80">
+                                <template #default="scope">
+                                    {{ scope.row.duration ? scope.row.duration.toFixed(2) + 's' : '-' }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="操作" width="120">
+                                <template #default="scope">
+                                    <el-button size="small" @click="viewBackup(scope.row)">查看</el-button>
+                                    <el-button size="small" type="danger" @click="deleteBackup(scope.row)">删除</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统日志页面 -->
+            <div v-else-if="currentPage === 'logs'">
+                <div class="page-header">
+                    <div class="page-title">
+                        <i class="el-icon-document"></i>
+                        系统日志
+                    </div>
+                    <div class="page-actions">
+                        <el-button @click="refreshLogs">
+                            <i class="el-icon-refresh"></i>
+                            刷新
+                        </el-button>
+                        <el-button type="danger" @click="clearLogs">
+                            <i class="el-icon-delete"></i>
+                            清空日志
+                        </el-button>
+                    </div>
+                </div>
+
+                <!-- 日志列表 -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="el-icon-document"></i>
+                        系统日志
+                    </div>
+                    <div class="card-body">
+                        <el-table :data="logsList" v-loading="logsLoading" stripe>
+                            <el-table-column prop="level" label="级别" width="80">
+                                <template #default="scope">
+                                    <el-tag :type="getLogLevelType(scope.row.level)">
+                                        {{ scope.row.level }}
+                                    </el-tag>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="message" label="消息" show-overflow-tooltip></el-table-column>
+                            <el-table-column prop="timestamp" label="时间" width="160">
+                                <template #default="scope">
+                                    {{ formatTime(scope.row.timestamp) }}
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 系统设置页面 -->
+            <div v-else-if="currentPage === 'settings'">
+                <div class="page-header">
+                    <div class="page-title">
+                        <i class="el-icon-setting"></i>
+                        系统设置
+                    </div>
+                </div>
+
+                <!-- 系统设置 -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="el-icon-setting"></i>
+                        系统配置
+                    </div>
+                    <div class="card-body">
+                        <el-form :model="settingsForm" label-width="150px">
+                            <el-form-item label="默认备份命令">
+                                <el-input v-model="settingsForm.default_command" placeholder="请输入默认备份命令"></el-input>
+                            </el-form-item>
+                            <el-form-item label="默认重试次数">
+                                <el-input-number v-model="settingsForm.default_retry" :min="0" :max="10"></el-input-number>
+                            </el-form-item>
+                            <el-form-item label="默认并发数">
+                                <el-input-number v-model="settingsForm.default_concurrent" :min="1" :max="20"></el-input-number>
+                            </el-form-item>
+                            <el-form-item label="日志保留天数">
+                                <el-input-number v-model="settingsForm.log_retention_days" :min="1" :max="365"></el-input-number>
+                            </el-form-item>
+                            <el-form-item label="自动备份">
+                                <el-switch v-model="settingsForm.auto_backup"></el-switch>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="saveSettings" :loading="settingsSaving">保存设置</el-button>
+                                <el-button @click="resetSettings">重置</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </div>
+
+                <!-- 系统信息 -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="el-icon-info"></i>
+                        系统信息
+                    </div>
+                    <div class="card-body">
+                        <el-descriptions :column="2" border>
+                            <el-descriptions-item label="系统版本">v1.0.0</el-descriptions-item>
+                            <el-descriptions-item label="Python版本">3.8+</el-descriptions-item>
+                            <el-descriptions-item label="Flask版本">2.0+</el-descriptions-item>
+                            <el-descriptions-item label="数据库">SQLite</el-descriptions-item>
+                            <el-descriptions-item label="运行时间">{{ systemUptime }}</el-descriptions-item>
+                            <el-descriptions-item label="内存使用">{{ memoryUsage }}</el-descriptions-item>
+                        </el-descriptions>
+                    </div>
+                </div>
+            </div>
+
             <!-- 其他页面内容 -->
             <div v-else>
                 <div class="page-header">
@@ -660,6 +894,36 @@
                 });
                 const backupLoading = ref(false);
                 const recentBackups = ref([]);
+
+                // 批量备份相关数据
+                const batchForm = ref({
+                    device_ids: [],
+                    command: 'show running-config',
+                    concurrent: 3,
+                    retry_count: 3
+                });
+                const batchLoading = ref(false);
+                const batchProgress = ref([]);
+
+                // 备份历史相关数据
+                const historyList = ref([]);
+                const historyLoading = ref(false);
+
+                // 系统日志相关数据
+                const logsList = ref([]);
+                const logsLoading = ref(false);
+
+                // 系统设置相关数据
+                const settingsForm = ref({
+                    default_command: 'show running-config',
+                    default_retry: 3,
+                    default_concurrent: 3,
+                    log_retention_days: 30,
+                    auto_backup: false
+                });
+                const settingsSaving = ref(false);
+                const systemUptime = ref('0天0小时0分钟');
+                const memoryUsage = ref('0MB');
 
                 // 页面配置
                 const pageConfig = {
@@ -893,6 +1157,216 @@
                     };
                 };
 
+                // 批量备份方法
+                const startBatchBackup = async () => {
+                    if (batchForm.value.device_ids.length === 0) {
+                        ElMessage.warning('请选择要备份的设备');
+                        return;
+                    }
+                    
+                    batchLoading.value = true;
+                    try {
+                        const response = await fetch('/api/backup/batch', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(batchForm.value)
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            ElMessage.success('批量备份任务已启动');
+                            loadBatchProgress();
+                        } else {
+                            ElMessage.error(data.error || '批量备份启动失败');
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        batchLoading.value = false;
+                    }
+                };
+
+                const loadBatchProgress = async () => {
+                    try {
+                        const response = await fetch('/api/backup/batch/progress');
+                        const data = await response.json();
+                        if (data.success) {
+                            batchProgress.value = data.progress;
+                        }
+                    } catch (error) {
+                        console.error('加载批量备份进度失败:', error);
+                    }
+                };
+
+                const refreshBatchData = () => {
+                    loadBatchProgress();
+                };
+
+                const getStatusType = (status) => {
+                    const statusMap = {
+                        'pending': 'info',
+                        'running': 'warning',
+                        'success': 'success',
+                        'failed': 'danger'
+                    };
+                    return statusMap[status] || 'info';
+                };
+
+                const getStatusText = (status) => {
+                    const statusMap = {
+                        'pending': '等待中',
+                        'running': '运行中',
+                        'success': '成功',
+                        'failed': '失败'
+                    };
+                    return statusMap[status] || '未知';
+                };
+
+                // 备份历史方法
+                const loadHistory = async () => {
+                    historyLoading.value = true;
+                    try {
+                        const response = await fetch('/api/backup/history');
+                        const data = await response.json();
+                        if (data.success) {
+                            historyList.value = data.tasks;
+                        }
+                    } catch (error) {
+                        console.error('加载备份历史失败:', error);
+                    } finally {
+                        historyLoading.value = false;
+                    }
+                };
+
+                const refreshHistory = () => {
+                    loadHistory();
+                };
+
+                const viewBackup = (backup) => {
+                    ElMessage.info('查看备份功能开发中');
+                };
+
+                const deleteBackup = async (backup) => {
+                    if (confirm(`确定要删除备份记录吗？`)) {
+                        try {
+                            const response = await fetch(`/api/backup/${backup.id}`, { method: 'DELETE' });
+                            const data = await response.json();
+                            if (data.success) {
+                                ElMessage.success('备份记录删除成功');
+                                loadHistory();
+                            } else {
+                                ElMessage.error(data.error || '删除失败');
+                            }
+                        } catch (error) {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
+                    }
+                };
+
+                // 系统日志方法
+                const loadLogs = async () => {
+                    logsLoading.value = true;
+                    try {
+                        const response = await fetch('/api/logs/list');
+                        const data = await response.json();
+                        if (data.success) {
+                            logsList.value = data.logs;
+                        }
+                    } catch (error) {
+                        console.error('加载系统日志失败:', error);
+                    } finally {
+                        logsLoading.value = false;
+                    }
+                };
+
+                const refreshLogs = () => {
+                    loadLogs();
+                };
+
+                const clearLogs = async () => {
+                    if (confirm('确定要清空所有日志吗？此操作不可恢复！')) {
+                        try {
+                            const response = await fetch('/api/logs/clear', { method: 'DELETE' });
+                            const data = await response.json();
+                            if (data.success) {
+                                ElMessage.success('日志清空成功');
+                                loadLogs();
+                            } else {
+                                ElMessage.error(data.error || '清空失败');
+                            }
+                        } catch (error) {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
+                    }
+                };
+
+                const getLogLevelType = (level) => {
+                    const levelMap = {
+                        'DEBUG': 'info',
+                        'INFO': 'success',
+                        'WARNING': 'warning',
+                        'ERROR': 'danger',
+                        'CRITICAL': 'danger'
+                    };
+                    return levelMap[level] || 'info';
+                };
+
+                // 系统设置方法
+                const loadSettings = async () => {
+                    try {
+                        const response = await fetch('/api/settings');
+                        const data = await response.json();
+                        if (data.success) {
+                            settingsForm.value = data.settings;
+                        }
+                    } catch (error) {
+                        console.error('加载系统设置失败:', error);
+                    }
+                };
+
+                const saveSettings = async () => {
+                    settingsSaving.value = true;
+                    try {
+                        const response = await fetch('/api/settings', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(settingsForm.value)
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            ElMessage.success('设置保存成功');
+                        } else {
+                            ElMessage.error(data.error || '保存失败');
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        settingsSaving.value = false;
+                    }
+                };
+
+                const resetSettings = () => {
+                    settingsForm.value = {
+                        default_command: 'show running-config',
+                        default_retry: 3,
+                        default_concurrent: 3,
+                        log_retention_days: 30,
+                        auto_backup: false
+                    };
+                };
+
+                const loadSystemInfo = async () => {
+                    try {
+                        const response = await fetch('/api/system/info');
+                        const data = await response.json();
+                        if (data.success) {
+                            systemUptime.value = data.uptime;
+                            memoryUsage.value = data.memory;
+                        }
+                    } catch (error) {
+                        console.error('加载系统信息失败:', error);
+                    }
+                };
+
                 // 工具方法
                 const formatTime = (timeStr) => {
                     if (!timeStr) return '-';
@@ -931,6 +1405,10 @@
                     refreshData();
                     loadDevices();
                     loadRecentBackups();
+                    loadHistory();
+                    loadLogs();
+                    loadSettings();
+                    loadSystemInfo();
                 });
 
                 return {
@@ -948,6 +1426,17 @@
                     backupForm,
                     backupLoading,
                     recentBackups,
+                    batchForm,
+                    batchLoading,
+                    batchProgress,
+                    historyList,
+                    historyLoading,
+                    logsList,
+                    logsLoading,
+                    settingsForm,
+                    settingsSaving,
+                    systemUptime,
+                    memoryUsage,
                     navigateTo,
                     getPageTitle,
                     getPageIcon,
@@ -962,6 +1451,23 @@
                     resetForm,
                     startBackup,
                     resetBackupForm,
+                    startBatchBackup,
+                    loadBatchProgress,
+                    refreshBatchData,
+                    getStatusType,
+                    getStatusText,
+                    loadHistory,
+                    refreshHistory,
+                    viewBackup,
+                    deleteBackup,
+                    loadLogs,
+                    refreshLogs,
+                    clearLogs,
+                    getLogLevelType,
+                    loadSettings,
+                    saveSettings,
+                    resetSettings,
+                    loadSystemInfo,
                     formatTime
                 };
             }
