@@ -1403,9 +1403,11 @@
                             console.log('统计数据加载成功:', statistics.value);
                         } else {
                             console.error('数据加载失败:', data.error);
+                            ElMessage.error('获取统计数据失败: ' + (data.error || '未知错误'));
                         }
                     } catch (error) {
                         console.error('网络错误:', error);
+                        ElMessage.error('网络错误，请稍后重试');
                     } finally {
                         loadingVisible.value = false;
                     }
@@ -1419,9 +1421,12 @@
                         const data = await response.json();
                         if (data.success) {
                             devices.value = data.devices;
+                        } else {
+                            ElMessage.error('获取设备列表失败: ' + (data.error || '未知错误'));
                         }
                     } catch (error) {
                         console.error('加载设备列表失败:', error);
+                        ElMessage.error('网络错误，请稍后重试');
                     } finally {
                         loading.value = false;
                     }
@@ -1528,9 +1533,12 @@
                         const data = await response.json();
                         if (data.success) {
                             recentBackups.value = data.tasks.slice(0, 10);
+                        } else {
+                            ElMessage.error('获取最近备份失败: ' + (data.error || '未知错误'));
                         }
                     } catch (error) {
                         console.error('加载备份记录失败:', error);
+                        ElMessage.error('网络错误，请稍后重试');
                     }
                 };
 
@@ -1645,10 +1653,16 @@
                         const response = await fetch('/api/backup/history');
                         const data = await response.json();
                         if (data.success) {
-                            historyList.value = data.tasks;
+                            historyList.value = data.tasks.map(task => ({
+                                ...task,
+                                created_at: dayjs(task.created_at).format('YYYY/MM/DD HH:mm:ss')
+                            }));
+                        } else {
+                            ElMessage.error('获取备份历史失败: ' + (data.error || '未知错误'));
                         }
                     } catch (error) {
                         console.error('加载备份历史失败:', error);
+                        ElMessage.error('网络错误，请稍后重试');
                     } finally {
                         historyLoading.value = false;
                     }
@@ -1692,7 +1706,14 @@
                             ElMessage.error(data.error || '获取备份内容失败');
                         }
                     } catch (error) {
-                        ElMessage.error('网络错误，请稍后重试');
+                        console.error('查看备份内容失败:', error);
+                        if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                            ElMessage.error('网络连接失败，请检查网络连接');
+                        } else if (error.name === 'SyntaxError') {
+                            ElMessage.error('服务器响应格式错误');
+                        } else {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
                     }
                 };
 
@@ -1708,7 +1729,12 @@
                                 ElMessage.error(data.error || '删除失败');
                             }
                         } catch (error) {
-                            ElMessage.error('网络错误，请稍后重试');
+                            console.error('删除备份记录失败:', error);
+                            if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                                ElMessage.error('网络连接失败，请检查网络连接');
+                            } else {
+                                ElMessage.error('网络错误，请稍后重试');
+                            }
                         }
                     }
                 };
