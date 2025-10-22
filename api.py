@@ -718,6 +718,75 @@ def list_log_files():
             'error': f'获取日志文件列表失败: {str(e)}'
         }), 500
 
+@api_bp.route('/logs/entries')
+@login_required
+def get_log_entries():
+    """获取日志条目"""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        level = request.args.get('level', '')
+        
+        # 模拟日志条目数据
+        log_entries = []
+        
+        # 从日志文件中读取最近的条目
+        log_dir = Path('logs')
+        if log_dir.exists():
+            for log_file in log_dir.glob('*.log'):
+                try:
+                    with open(log_file, 'r', encoding='utf-8') as f:
+                        lines = f.readlines()
+                        # 取最后50行作为示例
+                        recent_lines = lines[-50:] if len(lines) > 50 else lines
+                        
+                        for line in recent_lines:
+                            line = line.strip()
+                            if line:
+                                # 解析日志行格式: 2025-10-22 09:57:05,555 - module - LEVEL - message
+                                parts = line.split(' - ', 3)
+                                if len(parts) >= 4:
+                                    timestamp_str = parts[0]
+                                    module = parts[1]
+                                    log_level = parts[2]
+                                    message = parts[3]
+                                    
+                                    # 过滤级别
+                                    if level and log_level.lower() != level.lower():
+                                        continue
+                                    
+                                    log_entries.append({
+                                        'timestamp': timestamp_str,
+                                        'level': log_level,
+                                        'module': module,
+                                        'message': message
+                                    })
+                except Exception as e:
+                    continue
+        
+        # 按时间排序
+        log_entries.sort(key=lambda x: x['timestamp'], reverse=True)
+        
+        # 分页
+        total = len(log_entries)
+        start = (page - 1) * per_page
+        end = start + per_page
+        paginated_entries = log_entries[start:end]
+        
+        return jsonify({
+            'success': True,
+            'logs': paginated_entries,
+            'total': total,
+            'pages': (total + per_page - 1) // per_page,
+            'current_page': page
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'获取日志条目失败: {str(e)}'
+        }), 500
+
 @api_bp.route('/backup/compare/<int:task_id1>/<int:task_id2>')
 @login_required
 def compare_backup_files(task_id1, task_id2):
