@@ -1,9 +1,9 @@
 @echo off
-REM 推荐修复乱码提交信息的脚本
+REM 批量替换乱码提交信息为英文
 chcp 65001 >nul
 
 echo ========================================
-echo Git乱码提交信息修复脚本 (推荐版)
+echo 批量替换乱码提交信息为英文
 echo ========================================
 echo.
 
@@ -22,22 +22,20 @@ echo.
 echo 开始修复...
 echo.
 
-echo 使用git rebase修复提交信息...
-echo 这将启动交互式rebase，请按照以下步骤操作：
-echo 1. 在编辑器中，找到要修改的提交行（包含"ECHO is off"的提交）
-echo 2. 将 'pick' 改为 'reword' 或 'r'
-echo 3. 保存并退出编辑器
-echo 4. 在下一个编辑器中输入正确的中文提交信息：
-echo    "修正乱码提交信息：清理临时文件、更新系统日志、添加Docker部署配置"
-echo 5. 保存并退出
-echo 6. 重复步骤4-5直到所有提交都修复完成
+REM 创建修复脚本
+echo #!/bin/sh > fix_commit_msg.sh
+echo if echo "$1" ^| grep -q "ECHO is off"; then >> fix_commit_msg.sh
+echo   echo "fix: clean up temporary files and update system logs" >> fix_commit_msg.sh
+echo else >> fix_commit_msg.sh
+echo   cat >> fix_commit_msg.sh
+echo fi >> fix_commit_msg.sh
+
+echo 使用git filter-branch修复提交信息...
+git filter-branch --msg-filter "fix_commit_msg.sh" -- --all
+
 echo.
-
-echo 按任意键开始修复...
-pause
-
-REM 启动交互式rebase
-git rebase -i HEAD~15
+echo 清理临时文件...
+del fix_commit_msg.sh
 
 echo.
 echo ========================================
@@ -46,7 +44,7 @@ echo ========================================
 echo.
 
 echo 修复后的提交历史：
-git log --oneline -15
+git log --oneline -20
 
 echo.
 echo 如果修复成功，请运行以下命令推送到远程仓库：
