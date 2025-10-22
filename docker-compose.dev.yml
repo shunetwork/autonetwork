@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  # 开发环境配置
+  autonetwork:
+    build: .
+    container_name: autonetwork-dev
+    ports:
+      - "5000:5000"
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+      - ./backups:/app/backups
+      - ./data:/app/data
+    environment:
+      - FLASK_ENV=development
+      - FLASK_DEBUG=1
+      - SECRET_KEY=dev-secret-key
+      - ENCRYPTION_KEY=dev-encryption-key
+    restart: unless-stopped
+    networks:
+      - autonetwork-network
+
+networks:
+  autonetwork-network:
+    driver: bridge
