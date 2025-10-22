@@ -2011,13 +2011,15 @@
                 // 组件挂载时加载数据
                 onMounted(() => {
                     setCurrentPageFromURL();
-                    refreshData();
-                    loadDevices();
-                    loadRecentBackups();
-                    loadHistory();
-                    loadLogs();
-                    loadSettings();
-                    loadSystemInfo();
+                    // 页面初始化时静默加载所有数据，不显示错误消息
+                    // 只记录到控制台用于调试
+                    refreshData(false);
+                    loadDevices(false);
+                    loadRecentBackups(false);
+                    loadHistory(false);
+                    loadLogs(false);
+                    loadSettings(false);
+                    loadSystemInfo(false);
                 });
 
                 return {
