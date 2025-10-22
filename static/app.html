@@ -2114,7 +2114,8 @@ SW1,192.168.1.10,22,ssh,admin,password789,cisco_ios</pre>
                         if (data.success) {
                             logsList.value = data.logs.map(log => ({
                                 ...log,
-                                timestamp: dayjs(log.timestamp).format('YYYY/MM/DD HH:mm:ss')
+                                // 保持原始时间戳，让formatLogTime函数处理
+                                timestamp: log.timestamp
                             }));
                             totalLogs.value = data.total;
                         } else {
