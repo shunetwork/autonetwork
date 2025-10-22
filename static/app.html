@@ -1162,6 +1162,9 @@
                 // 系统日志相关数据
                 const logsList = ref([]);
                 const logsLoading = ref(false);
+                const currentLogsPage = ref(1);
+                const logsPerPage = 20;
+                const totalLogs = ref(0);
 
                 // 系统设置相关数据
                 const settingsForm = ref({
@@ -1791,6 +1794,9 @@
                     historyLoading,
                     logsList,
                     logsLoading,
+                    currentLogsPage,
+                    logsPerPage,
+                    totalLogs,
                     settingsForm,
                     settingsSaving,
                     systemUptime,
