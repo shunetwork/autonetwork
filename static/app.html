@@ -1384,7 +1384,7 @@
                     return pageConfig[currentPage.value]?.icon || 'el-icon-question';
                 };
 
-                const refreshData = async () => {
+                const refreshData = async (showError = false) => {
                     loadingVisible.value = true;
                     try {
                         // 加载统计数据
@@ -1403,18 +1403,22 @@
                             console.log('统计数据加载成功:', statistics.value);
                         } else {
                             console.error('数据加载失败:', data.error);
-                            ElMessage.error('获取统计数据失败: ' + (data.error || '未知错误'));
+                            if (showError) {
+                                ElMessage.error('获取统计数据失败: ' + (data.error || '未知错误'));
+                            }
                         }
                     } catch (error) {
                         console.error('网络错误:', error);
-                        ElMessage.error('网络错误，请稍后重试');
+                        if (showError) {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
                     } finally {
                         loadingVisible.value = false;
                     }
                 };
 
                 // 设备管理方法
-                const loadDevices = async () => {
+                const loadDevices = async (showError = false) => {
                     loading.value = true;
                     try {
                         const response = await fetch('/api/device/list');
@@ -1422,11 +1426,16 @@
                         if (data.success) {
                             devices.value = data.devices;
                         } else {
-                            ElMessage.error('获取设备列表失败: ' + (data.error || '未知错误'));
+                            console.error('获取设备列表失败:', data.error);
+                            if (showError) {
+                                ElMessage.error('获取设备列表失败: ' + (data.error || '未知错误'));
+                            }
                         }
                     } catch (error) {
                         console.error('加载设备列表失败:', error);
-                        ElMessage.error('网络错误，请稍后重试');
+                        if (showError) {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
                     } finally {
                         loading.value = false;
                     }
@@ -1527,18 +1536,23 @@
                 };
 
                 // 单设备备份方法
-                const loadRecentBackups = async () => {
+                const loadRecentBackups = async (showError = false) => {
                     try {
                         const response = await fetch('/api/backup/recent');
                         const data = await response.json();
                         if (data.success) {
                             recentBackups.value = data.tasks.slice(0, 10);
                         } else {
-                            ElMessage.error('获取最近备份失败: ' + (data.error || '未知错误'));
+                            console.error('获取最近备份失败:', data.error);
+                            if (showError) {
+                                ElMessage.error('获取最近备份失败: ' + (data.error || '未知错误'));
+                            }
                         }
                     } catch (error) {
                         console.error('加载备份记录失败:', error);
-                        ElMessage.error('网络错误，请稍后重试');
+                        if (showError) {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
                     }
                 };
 
@@ -1647,7 +1661,7 @@
                 };
 
                 // 备份历史方法
-                const loadHistory = async () => {
+                const loadHistory = async (showError = false) => {
                     historyLoading.value = true;
                     try {
                         const response = await fetch('/api/backup/history');
@@ -1658,18 +1672,23 @@
                                 created_at: dayjs(task.created_at).format('YYYY/MM/DD HH:mm:ss')
                             }));
                         } else {
-                            ElMessage.error('获取备份历史失败: ' + (data.error || '未知错误'));
+                            console.error('获取备份历史失败:', data.error);
+                            if (showError) {
+                                ElMessage.error('获取备份历史失败: ' + (data.error || '未知错误'));
+                            }
                         }
                     } catch (error) {
                         console.error('加载备份历史失败:', error);
-                        ElMessage.error('网络错误，请稍后重试');
+                        if (showError) {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
                     } finally {
                         historyLoading.value = false;
                     }
                 };
 
                 const refreshHistory = () => {
-                    loadHistory();
+                    loadHistory(true);
                 };
 
                 const viewBackup = async (backup) => {
@@ -1740,7 +1759,7 @@
                 };
 
                 // 系统日志方法
-                const loadLogs = async () => {
+                const loadLogs = async (showError = false) => {
                     logsLoading.value = true;
                     try {
                         const response = await fetch(`/api/logs/entries?page=${currentLogsPage.value}&per_page=${logsPerPage}`);
@@ -1752,18 +1771,23 @@
                             }));
                             totalLogs.value = data.total;
                         } else {
-                            ElMessage.error('获取系统日志失败: ' + (data.error || '未知错误'));
+                            console.error('获取系统日志失败:', data.error);
+                            if (showError) {
+                                ElMessage.error('获取系统日志失败: ' + (data.error || '未知错误'));
+                            }
                         }
                     } catch (error) {
                         console.error('加载系统日志失败:', error);
-                        ElMessage.error('获取系统日志异常: ' + error.message);
+                        if (showError) {
+                            ElMessage.error('获取系统日志异常: ' + error.message);
+                        }
                     } finally {
                         logsLoading.value = false;
                     }
                 };
 
                 const refreshLogs = () => {
-                    loadLogs();
+                    loadLogs(true);
                 };
 
                 const clearLogs = async () => {
@@ -1795,15 +1819,23 @@
                 };
 
                 // 系统设置方法
-                const loadSettings = async () => {
+                const loadSettings = async (showError = false) => {
                     try {
                         const response = await fetch('/api/settings');
                         const data = await response.json();
                         if (data.success) {
                             settingsForm.value = data.settings;
+                        } else {
+                            console.error('获取系统设置失败:', data.error);
+                            if (showError) {
+                                ElMessage.error('获取系统设置失败: ' + (data.error || '未知错误'));
+                            }
                         }
                     } catch (error) {
                         console.error('加载系统设置失败:', error);
+                        if (showError) {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
                     }
                 };
 
@@ -1838,16 +1870,24 @@
                     };
                 };
 
-                const loadSystemInfo = async () => {
+                const loadSystemInfo = async (showError = false) => {
                     try {
                         const response = await fetch('/api/system/info');
                         const data = await response.json();
                         if (data.success) {
                             systemUptime.value = data.uptime;
                             memoryUsage.value = data.memory;
+                        } else {
+                            console.error('获取系统信息失败:', data.error);
+                            if (showError) {
+                                ElMessage.error('获取系统信息失败: ' + (data.error || '未知错误'));
+                            }
                         }
                     } catch (error) {
                         console.error('加载系统信息失败:', error);
+                        if (showError) {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
                     }
                 };
 
