@@ -4815,3 +4815,4 @@ with app.app_context(). See the documentation for more information.
 2025-10-22 16:17:58,111 - scheduler - INFO - 备份调度器已启动
 2025-10-22 16:17:58,121 - werkzeug - WARNING -  * Debugger is active!
 2025-10-22 16:17:58,125 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 16:19:34,660 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:19:34] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
