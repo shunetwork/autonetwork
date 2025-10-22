@@ -1,0 +1,14 @@
+feat: 添加Docker部署配置
+
+- 添加Dockerfile用于容器化部署
+- 添加docker-compose.yml生产环境配置
+- 添加docker-compose.dev.yml开发环境配置
+- 添加.dockerignore排除不必要文件
+- 添加docker-entrypoint.sh容器初始化脚本
+- 添加run_production.py生产环境启动脚本
+- 添加deploy.sh和deploy.bat自动化部署脚本
+- 添加DOCKER_DEPLOYMENT.md详细部署指南
+- 支持数据持久化卷挂载
+- 健康检查和重启策略
+- 环境变量配置
+- 生产就绪配置和安全最佳实践
