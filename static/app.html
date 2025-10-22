@@ -2375,17 +2375,33 @@ SW1,192.168.1.10,22,ssh,admin,password789,cisco_ios</pre>
                 const formatLogTime = (timeStr) => {
                     if (!timeStr) return '-';
                     
-                    // 处理日志时间戳格式 (如: "2025-10-22 09:58:01,190")
+                    // 处理日志时间戳格式 (如: "2025-10-22 15:47:20,985")
                     let time;
                     if (timeStr.includes(',')) {
-                        // 去掉毫秒部分
+                        // 去掉毫秒部分，并确保格式正确
                         const cleanTime = timeStr.split(',')[0];
+                        // 尝试解析ISO格式
                         time = new Date(cleanTime);
                     } else {
                         time = new Date(timeStr);
                     }
                     
-                    if (isNaN(time.getTime())) return timeStr; // 如果无法解析，返回原始字符串
+                    if (isNaN(time.getTime())) {
+                        // 如果无法解析，尝试其他格式
+                        try {
+                            // 尝试解析 "2025-10-22 15:47:20" 格式
+                            const parts = timeStr.split(' ');
+                            if (parts.length >= 2) {
+                                const datePart = parts[0];
+                                const timePart = parts[1].split(',')[0]; // 去掉毫秒
+                                time = new Date(`${datePart}T${timePart}`);
+                            }
+                        } catch (e) {
+                            return timeStr; // 如果仍然无法解析，返回原始字符串
+                        }
+                    }
+                    
+                    if (isNaN(time.getTime())) return timeStr; // 如果仍然无法解析，返回原始字符串
                     
                     const now = new Date();
                     const diffMs = now - time;
