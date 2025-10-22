@@ -4789,3 +4789,29 @@ with app.app_context(). See the documentation for more information.
 2025-10-22 16:17:18,863 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
 2025-10-22 16:17:18,864 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/backup/recent HTTP/1.1" 200 -
 2025-10-22 16:17:18,872 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 16:17:50,469 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\api.py', reloading
+2025-10-22 16:17:50,469 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 16:17:50,471 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 16:17:50,672 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 16:17:51,820 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 16:17:51,821 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 16:17:51,821 - scheduler - INFO - 备份调度器已启动
+2025-10-22 16:17:51,830 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 16:17:51,836 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 16:17:56,879 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\api.py', reloading
+2025-10-22 16:17:56,879 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 16:17:56,881 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 16:17:57,098 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 16:17:58,109 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 16:17:58,111 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 16:17:58,111 - scheduler - INFO - 备份调度器已启动
+2025-10-22 16:17:58,121 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 16:17:58,125 - werkzeug - INFO -  * Debugger PIN: 907-116-072
