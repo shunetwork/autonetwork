@@ -486,8 +486,8 @@
                         return;
                     }
                     
-                    // 其他页面暂时显示占位内容
-                    ElMessage.info(`正在开发 ${pageConfig[page].title} 页面`);
+                    // 其他页面显示占位内容，但不显示消息
+                    // ElMessage.info(`正在开发 ${pageConfig[page].title} 页面`);
                 };
 
                 const getPageTitle = () => {
@@ -506,13 +506,20 @@
                         const data = await response.json();
                         
                         if (data.success) {
-                            statistics.value = data.statistics;
-                            ElMessage.success('数据刷新成功');
+                            // 映射API返回的数据结构到前端期望的格式
+                            const apiStats = data.statistics;
+                            statistics.value = {
+                                deviceCount: apiStats.total_devices || 0,
+                                backupCount: apiStats.total_tasks || 0,
+                                successCount: apiStats.success_tasks || 0,
+                                failedCount: apiStats.failed_tasks || 0
+                            };
+                            console.log('统计数据加载成功:', statistics.value);
                         } else {
-                            ElMessage.error('数据加载失败: ' + data.error);
+                            console.error('数据加载失败:', data.error);
                         }
                     } catch (error) {
-                        ElMessage.error('网络错误，请稍后重试');
+                        console.error('网络错误:', error);
                     } finally {
                         loadingVisible.value = false;
                     }

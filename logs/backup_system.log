@@ -2344,3 +2344,223 @@ with app.app_context(). See the documentation for more information.
 2025-10-22 08:45:51,785 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:45:51] "GET /api/backup/recent HTTP/1.1" 200 -
 2025-10-22 08:45:51,796 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:45:51] "GET /api/statistics HTTP/1.1" 200 -
 2025-10-22 08:45:51,801 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:45:51] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 08:46:20,774 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-10-22 08:46:20,779 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET / HTTP/1.1" 200 -
+2025-10-22 08:46:20,784 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET / HTTP/1.1" 200 -
+2025-10-22 08:46:20,789 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET / HTTP/1.1" 200 -
+2025-10-22 08:46:20,793 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET /backup/batch HTTP/1.1" 200 -
+2025-10-22 08:46:20,796 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET /history HTTP/1.1" 200 -
+2025-10-22 08:46:20,802 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET /logs HTTP/1.1" 200 -
+2025-10-22 08:46:20,809 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET /settings HTTP/1.1" 200 -
+2025-10-22 08:46:20,815 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET /devices HTTP/1.1" 200 -
+2025-10-22 08:46:20,819 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 08:46:20,822 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET /compare HTTP/1.1" 200 -
+2025-10-22 08:46:20,826 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET / HTTP/1.1" 200 -
+2025-10-22 08:46:20,830 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:46:20] "GET / HTTP/1.1" 200 -
+2025-10-22 08:46:48,505 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\app.py', reloading
+2025-10-22 08:46:48,505 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 08:46:48,507 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 08:46:48,649 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 08:46:49,629 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 08:46:49,630 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 08:46:49,630 - scheduler - INFO - 备份调度器已启动
+2025-10-22 08:46:49,640 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 08:46:49,646 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 08:48:10,881 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:10] "GET / HTTP/1.1" 200 -
+2025-10-22 08:48:11,095 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:11] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:48:11,771 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:11] "[36mGET / HTTP/1.1[0m" 304 -
+2025-10-22 08:48:11,859 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:11] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:48:11,945 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:11] "[36mGET / HTTP/1.1[0m" 304 -
+2025-10-22 08:48:11,992 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:11] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:48:12,113 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:12] "[36mGET / HTTP/1.1[0m" 304 -
+2025-10-22 08:48:12,152 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:12] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:48:12,265 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:12] "[36mGET / HTTP/1.1[0m" 304 -
+2025-10-22 08:48:12,301 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:12] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:48:12,423 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:12] "[36mGET / HTTP/1.1[0m" 304 -
+2025-10-22 08:48:12,470 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:12] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:48:13,154 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:13] "[36mGET /backup/single HTTP/1.1[0m" 304 -
+2025-10-22 08:48:13,254 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:13] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:48:13,262 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:13] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 08:48:14,776 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:14] "GET /backup/batch HTTP/1.1" 200 -
+2025-10-22 08:48:14,816 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:14] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:48:18,366 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:18] "GET /devices HTTP/1.1" 200 -
+2025-10-22 08:48:22,054 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:22] "[36mGET /backup/batch HTTP/1.1[0m" 304 -
+2025-10-22 08:48:22,094 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:22] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:48:24,896 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:24] "[36mGET /compare HTTP/1.1[0m" 304 -
+2025-10-22 08:48:24,956 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:24] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:48:29,284 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:29] "[36mGET /backup/single HTTP/1.1[0m" 304 -
+2025-10-22 08:48:29,356 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:29] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:48:29,358 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:29] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 08:48:29,952 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:29] "[36mGET /devices HTTP/1.1[0m" 304 -
+2025-10-22 08:48:34,842 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:34] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:48:53,191 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:53] "[32mGET / HTTP/1.1[0m" 302 -
+2025-10-22 08:48:53,221 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:48:53] "GET /auth/login?next=/ HTTP/1.1" 200 -
+2025-10-22 08:49:03,196 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:03] "[32mPOST /auth/login?next=/ HTTP/1.1[0m" 302 -
+2025-10-22 08:49:03,205 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:03] "GET / HTTP/1.1" 200 -
+2025-10-22 08:49:03,495 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:03] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:49:09,558 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:09] "GET /devices HTTP/1.1" 200 -
+2025-10-22 08:49:14,562 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:14] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 08:49:14,653 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:14] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:49:14,657 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:14] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 08:49:30,840 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:30] "GET /backup/batch HTTP/1.1" 200 -
+2025-10-22 08:49:30,880 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:30] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:49:32,680 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:32] "GET /compare HTTP/1.1" 200 -
+2025-10-22 08:49:32,754 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:32] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:49:35,836 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:35] "GET /api/backup/device/2 HTTP/1.1" 200 -
+2025-10-22 08:49:39,256 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:39] "[31m[1mGET /api/backup/compare/quick/2 HTTP/1.1[0m" 400 -
+2025-10-22 08:49:46,099 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:46] "[36mGET /compare HTTP/1.1[0m" 304 -
+2025-10-22 08:49:46,215 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:46] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:49:48,200 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:48] "[36mGET /backup/single HTTP/1.1[0m" 304 -
+2025-10-22 08:49:48,273 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:48] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:49:48,276 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:48] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 08:49:49,482 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:49] "[36mGET /backup/batch HTTP/1.1[0m" 304 -
+2025-10-22 08:49:49,521 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:49:49] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:50:40,101 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 08:50:40,102 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 08:50:40,102 - scheduler - INFO - 备份调度器已启动
+2025-10-22 08:50:40,133 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://103.215.173.220:5000
+2025-10-22 08:50:40,133 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2025-10-22 08:50:40,134 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 08:50:41,620 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 08:50:41,621 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 08:50:41,621 - scheduler - INFO - 备份调度器已启动
+2025-10-22 08:50:41,630 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 08:50:41,634 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 08:51:43,092 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "[32mGET / HTTP/1.1[0m" 302 -
+2025-10-22 08:51:43,118 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /auth/login?next=/ HTTP/1.1" 200 -
+2025-10-22 08:51:43,216 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-10-22 08:51:43,254 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET / HTTP/1.1" 200 -
+2025-10-22 08:51:43,258 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET / HTTP/1.1" 200 -
+2025-10-22 08:51:43,261 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /devices HTTP/1.1" 200 -
+2025-10-22 08:51:43,264 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 08:51:43,267 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /backup/batch HTTP/1.1" 200 -
+2025-10-22 08:51:43,270 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /history HTTP/1.1" 200 -
+2025-10-22 08:51:43,273 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /logs HTTP/1.1" 200 -
+2025-10-22 08:51:43,276 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /settings HTTP/1.1" 200 -
+2025-10-22 08:51:43,279 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /compare HTTP/1.1" 200 -
+2025-10-22 08:51:43,283 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:51:43,289 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 08:51:43,299 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:51:43,302 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 08:51:43,307 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/backup/device/1 HTTP/1.1" 200 -
+2025-10-22 08:51:43,312 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/backup/compare/quick/1 HTTP/1.1" 200 -
+2025-10-22 08:51:43,315 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:51:43,321 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 08:51:43,325 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/backup/device/1 HTTP/1.1" 200 -
+2025-10-22 08:51:43,329 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/backup/compare/quick/1 HTTP/1.1" 200 -
+2025-10-22 08:51:43,334 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:51:43,338 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 08:51:43,341 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET / HTTP/1.1" 200 -
+2025-10-22 08:51:43,345 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:51:43] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:51:57,963 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\comprehensive_system_check.py', reloading
+2025-10-22 08:51:57,963 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 08:51:57,964 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 08:51:58,166 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 08:51:59,122 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 08:51:59,123 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 08:51:59,123 - scheduler - INFO - 备份调度器已启动
+2025-10-22 08:51:59,132 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 08:51:59,136 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 08:52:00,218 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "[32mGET / HTTP/1.1[0m" 302 -
+2025-10-22 08:52:00,244 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /auth/login?next=/ HTTP/1.1" 200 -
+2025-10-22 08:52:00,346 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-10-22 08:52:00,396 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET / HTTP/1.1" 200 -
+2025-10-22 08:52:00,400 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET / HTTP/1.1" 200 -
+2025-10-22 08:52:00,404 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /devices HTTP/1.1" 200 -
+2025-10-22 08:52:00,408 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 08:52:00,412 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /backup/batch HTTP/1.1" 200 -
+2025-10-22 08:52:00,416 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /history HTTP/1.1" 200 -
+2025-10-22 08:52:00,420 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /logs HTTP/1.1" 200 -
+2025-10-22 08:52:00,423 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /settings HTTP/1.1" 200 -
+2025-10-22 08:52:00,427 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /compare HTTP/1.1" 200 -
+2025-10-22 08:52:00,431 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:52:00,439 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 08:52:00,452 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:52:00,456 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 08:52:00,461 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /api/backup/device/1 HTTP/1.1" 200 -
+2025-10-22 08:52:00,467 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /api/backup/compare/quick/1 HTTP/1.1" 200 -
+2025-10-22 08:52:00,470 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:00] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:52:00,477 - device_manager - INFO - 密码解密成功，长度: 8
+2025-10-22 08:52:00,496 - paramiko.transport - INFO - Connected (version 2.0, client Cisco-1.25)
+2025-10-22 08:52:00,880 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-22 08:52:01,107 - device_manager - INFO - 成功连接到设备 192.168.10.99
+2025-10-22 08:52:01,200 - device_manager - INFO - 已断开设备 192.168.10.99 的连接
+2025-10-22 08:52:01,201 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:01] "POST /api/device/test HTTP/1.1" 200 -
+2025-10-22 08:52:01,207 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:01] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 08:52:01,210 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:01] "GET /api/backup/device/1 HTTP/1.1" 200 -
+2025-10-22 08:52:01,214 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:01] "GET /api/backup/compare/quick/1 HTTP/1.1" 200 -
+2025-10-22 08:52:01,219 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:01] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:52:01,222 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:01] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 08:52:01,225 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:01] "GET / HTTP/1.1" 200 -
+2025-10-22 08:52:01,229 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:01] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:52:37,535 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:37] "[32mGET / HTTP/1.1[0m" 302 -
+2025-10-22 08:52:37,554 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:52:37] "GET /auth/login?next=/ HTTP/1.1" 200 -
+2025-10-22 08:52:42,325 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\final_system_verification.py', reloading
+2025-10-22 08:52:42,325 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 08:52:42,327 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 08:52:42,475 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 08:52:43,410 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 08:52:43,411 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 08:52:43,411 - scheduler - INFO - 备份调度器已启动
+2025-10-22 08:52:43,421 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 08:52:43,425 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 08:52:46,453 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\final_system_verification.py', reloading
+2025-10-22 08:52:46,454 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 08:52:46,456 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 08:52:46,626 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 08:52:47,556 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 08:52:47,558 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 08:52:47,558 - scheduler - INFO - 备份调度器已启动
+2025-10-22 08:52:47,567 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 08:52:47,571 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 08:53:08,105 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "[32mGET / HTTP/1.1[0m" 302 -
+2025-10-22 08:53:08,129 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /auth/login?next=/ HTTP/1.1" 200 -
+2025-10-22 08:53:08,222 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "[32mPOST /auth/login HTTP/1.1[0m" 302 -
+2025-10-22 08:53:08,257 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET / HTTP/1.1" 200 -
+2025-10-22 08:53:08,260 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET / HTTP/1.1" 200 -
+2025-10-22 08:53:08,264 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /devices HTTP/1.1" 200 -
+2025-10-22 08:53:08,267 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 08:53:08,270 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /backup/batch HTTP/1.1" 200 -
+2025-10-22 08:53:08,272 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /history HTTP/1.1" 200 -
+2025-10-22 08:53:08,275 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /logs HTTP/1.1" 200 -
+2025-10-22 08:53:08,278 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /settings HTTP/1.1" 200 -
+2025-10-22 08:53:08,281 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /compare HTTP/1.1" 200 -
+2025-10-22 08:53:08,285 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:53:08,291 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 08:53:08,301 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 08:53:08,305 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 08:53:08,308 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:08] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 08:53:08,312 - device_manager - INFO - 密码解密成功，长度: 8
+2025-10-22 08:53:08,351 - paramiko.transport - INFO - Connected (version 2.0, client Cisco-1.25)
+2025-10-22 08:53:08,932 - paramiko.transport - INFO - Authentication (password) successful!
+2025-10-22 08:53:09,159 - device_manager - INFO - 成功连接到设备 192.168.10.99
+2025-10-22 08:53:09,252 - device_manager - INFO - 已断开设备 192.168.10.99 的连接
+2025-10-22 08:53:09,253 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:09] "POST /api/device/test HTTP/1.1" 200 -
+2025-10-22 08:53:09,260 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 08:53:09] "GET / HTTP/1.1" 200 -
