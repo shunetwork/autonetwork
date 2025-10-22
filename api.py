@@ -103,6 +103,82 @@ def test_new_device_connection():
             'message': f'测试连接失败: {str(e)}'
         }), 500
 
+@api_bp.route('/device/batch', methods=['POST'])
+@login_required
+def batch_import_devices():
+    """批量导入设备"""
+    try:
+        data = request.get_json()
+        devices_data = data.get('devices', [])
+        
+        if not devices_data:
+            return jsonify({
+                'success': False,
+                'error': '设备列表不能为空'
+            }), 400
+        
+        imported_count = 0
+        failed_count = 0
+        errors = []
+        
+        for device_data in devices_data:
+            try:
+                # 检查必填字段
+                required_fields = ['alias', 'ip_address', 'username', 'password']
+                missing_fields = [field for field in required_fields if not device_data.get(field)]
+                if missing_fields:
+                    errors.append(f"设备 {device_data.get('alias', 'unknown')}: 缺少必填字段 {', '.join(missing_fields)}")
+                    failed_count += 1
+                    continue
+                
+                # 检查设备是否已存在
+                existing_device = Device.query.filter_by(ip_address=device_data['ip_address']).first()
+                if existing_device:
+                    errors.append(f"设备 {device_data['alias']} ({device_data['ip_address']}): IP地址已存在")
+                    failed_count += 1
+                    continue
+                
+                # 创建新设备
+                device = Device(
+                    alias=device_data['alias'],
+                    ip_address=device_data['ip_address'],
+                    port=device_data.get('port', 22),
+                    protocol=device_data.get('protocol', 'ssh'),
+                    username=device_data['username'],
+                    password=device_data['password'],
+                    device_type=device_data.get('device_type', 'cisco_ios'),
+                    is_active=device_data.get('is_active', True)
+                )
+                
+                db.session.add(device)
+                imported_count += 1
+                
+            except Exception as e:
+                errors.append(f"设备 {device_data.get('alias', 'unknown')}: {str(e)}")
+                failed_count += 1
+        
+        # 提交所有成功的设备
+        if imported_count > 0:
+            db.session.commit()
+        
+        result = {
+            'success': imported_count > 0,
+            'imported_count': imported_count,
+            'failed_count': failed_count
+        }
+        
+        if errors:
+            result['errors'] = errors
+        
+        return jsonify(result)
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({
+            'success': False,
+            'error': f'批量导入失败: {str(e)}'
+        }), 500
+
 @api_bp.route('/backup/single', methods=['POST'])
 @login_required
 def backup_single_device():

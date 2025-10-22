@@ -553,6 +553,78 @@
                 gap: 16px;
             }
         }
+        
+        /* 批量导入对话框样式 */
+        .batch-import-content {
+            padding: 10px 0;
+        }
+        
+        .import-section {
+            margin-bottom: 20px;
+        }
+        
+        .import-header h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .import-header p {
+            margin: 0 0 15px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .format-example {
+            background: #f5f7fa;
+            border-radius: 4px;
+            padding: 12px;
+            margin-bottom: 20px;
+        }
+        
+        .format-example pre {
+            margin: 0;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+            white-space: pre;
+            overflow-x: auto;
+        }
+        
+        .manual-input-header h4 {
+            margin: 0 0 10px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .manual-input-header p {
+            margin: 0 0 15px 0;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .manual-textarea {
+            font-family: 'Courier New', monospace;
+        }
+        
+        .import-preview {
+            margin-top: 25px;
+            padding-top: 20px;
+            border-top: 1px solid #e4e7ed;
+        }
+        
+        .import-preview h4 {
+            margin: 0 0 15px 0;
+            color: #333;
+            font-size: 16px;
+        }
+        
+        .dialog-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
     </style>
 </head>
 <body>
@@ -713,6 +785,10 @@
                             <i class="el-icon-plus"></i>
                             添加设备
                         </el-button>
+                        <el-button type="success" @click="showBatchImportDialog">
+                            <i class="el-icon-upload"></i>
+                            批量导入
+                        </el-button>
                         <el-button @click="refreshDevices">
                             <i class="el-icon-refresh"></i>
                             刷新
@@ -794,6 +870,93 @@
                     <template #footer>
                         <el-button @click="dialogVisible = false">取消</el-button>
                         <el-button type="primary" @click="saveDevice" :loading="saving">保存</el-button>
+                    </template>
+                </el-dialog>
+
+                <!-- 批量导入对话框 -->
+                <el-dialog v-model="batchImportDialogVisible" title="批量导入设备" width="800px">
+                    <div class="batch-import-content">
+                        <div class="import-tabs">
+                            <el-tabs v-model="activeImportTab" type="card">
+                                <el-tab-pane label="CSV文件导入" name="csv">
+                                    <div class="import-section">
+                                        <div class="import-header">
+                                            <h4>CSV文件格式说明</h4>
+                                            <p>请按照以下格式准备CSV文件，每行一个设备：</p>
+                                        </div>
+                                        <div class="format-example">
+                                            <pre>设备别名,IP地址,端口,协议,用户名,密码,设备类型
+R1,192.168.1.1,22,ssh,admin,password123,cisco_ios
+R2,192.168.1.2,22,ssh,admin,password456,cisco_ios
+SW1,192.168.1.10,22,ssh,admin,password789,cisco_ios</pre>
+                                        </div>
+                                        <el-upload
+                                            ref="csvUpload"
+                                            :auto-upload="false"
+                                            :on-change="handleCsvFileChange"
+                                            :show-file-list="true"
+                                            accept=".csv"
+                                            drag>
+                                            <i class="el-icon-upload"></i>
+                                            <div class="el-upload__text">将CSV文件拖到此处，或<em>点击上传</em></div>
+                                            <div class="el-upload__tip">只能上传CSV文件，且不超过10MB</div>
+                                        </el-upload>
+                                    </div>
+                                </el-tab-pane>
+                                
+                                <el-tab-pane label="手动输入" name="manual">
+                                    <div class="import-section">
+                                        <div class="manual-input-header">
+                                            <h4>手动输入设备信息</h4>
+                                            <p>每行一个设备，格式：设备别名,IP地址,端口,协议,用户名,密码,设备类型</p>
+                                        </div>
+                                        <el-input
+                                            v-model="manualInputText"
+                                            type="textarea"
+                                            :rows="10"
+                                            placeholder="请输入设备信息，每行一个设备：&#10;R1,192.168.1.1,22,ssh,admin,password123,cisco_ios&#10;R2,192.168.1.2,22,ssh,admin,password456,cisco_ios"
+                                            class="manual-textarea">
+                                        </el-input>
+                                    </div>
+                                </el-tab-pane>
+                            </el-tabs>
+                        </div>
+                        
+                        <div class="import-preview" v-if="importPreview.length > 0">
+                            <h4>导入预览 ({{ importPreview.length }} 个设备)</h4>
+                            <el-table :data="importPreview" stripe max-height="300" size="small">
+                                <el-table-column prop="alias" label="设备别名" width="100"></el-table-column>
+                                <el-table-column prop="ip_address" label="IP地址" width="120"></el-table-column>
+                                <el-table-column prop="port" label="端口" width="60"></el-table-column>
+                                <el-table-column prop="protocol" label="协议" width="80"></el-table-column>
+                                <el-table-column prop="username" label="用户名" width="100"></el-table-column>
+                                <el-table-column prop="device_type" label="设备类型" width="100"></el-table-column>
+                                <el-table-column label="状态" width="80">
+                                    <template #default="scope">
+                                        <el-tag :type="scope.row.valid ? 'success' : 'danger'" size="small">
+                                            {{ scope.row.valid ? '有效' : '无效' }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column label="错误信息" show-overflow-tooltip>
+                                    <template #default="scope">
+                                        <span v-if="!scope.row.valid" style="color: #f56c6c;">{{ scope.row.error }}</span>
+                                    </template>
+                                </el-table-column>
+                            </el-table>
+                        </div>
+                    </div>
+                    
+                    <template #footer>
+                        <div class="dialog-footer">
+                            <el-button @click="batchImportDialogVisible = false">取消</el-button>
+                            <el-button type="primary" @click="previewImport" :loading="importPreviewLoading">
+                                预览导入
+                            </el-button>
+                            <el-button type="success" @click="confirmImport" :loading="importing" :disabled="importPreview.length === 0 || !importPreview.every(item => item.valid)">
+                                确认导入 ({{ importPreview.filter(item => item.valid).length }} 个设备)
+                            </el-button>
+                        </div>
                     </template>
                 </el-dialog>
             </div>
@@ -1284,6 +1447,15 @@
                     password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
                 });
 
+                // 批量导入相关数据
+                const batchImportDialogVisible = ref(false);
+                const activeImportTab = ref('csv');
+                const manualInputText = ref('');
+                const importPreview = ref([]);
+                const importPreviewLoading = ref(false);
+                const importing = ref(false);
+                const csvFile = ref(null);
+
                 // 单设备备份相关数据
                 const backupForm = ref({
                     device_id: '',
@@ -1534,6 +1706,155 @@
                         device_type: 'cisco_ios',
                         is_active: true
                     };
+                };
+
+                // 批量导入方法
+                const showBatchImportDialog = () => {
+                    batchImportDialogVisible.value = true;
+                    activeImportTab.value = 'csv';
+                    manualInputText.value = '';
+                    importPreview.value = [];
+                    csvFile.value = null;
+                };
+
+                const handleCsvFileChange = (file) => {
+                    csvFile.value = file.raw;
+                };
+
+                const parseCsvContent = (content) => {
+                    const lines = content.split('\n').filter(line => line.trim());
+                    if (lines.length === 0) return [];
+                    
+                    // 跳过标题行
+                    const dataLines = lines.slice(1);
+                    return dataLines.map((line, index) => {
+                        const fields = line.split(',').map(field => field.trim());
+                        return {
+                            alias: fields[0] || '',
+                            ip_address: fields[1] || '',
+                            port: parseInt(fields[2]) || 22,
+                            protocol: fields[3] || 'ssh',
+                            username: fields[4] || '',
+                            password: fields[5] || '',
+                            device_type: fields[6] || 'cisco_ios',
+                            is_active: true,
+                            lineNumber: index + 2 // 考虑标题行
+                        };
+                    });
+                };
+
+                const validateDevice = (device) => {
+                    const errors = [];
+                    
+                    if (!device.alias || device.alias.trim() === '') {
+                        errors.push('设备别名不能为空');
+                    }
+                    
+                    if (!device.ip_address || device.ip_address.trim() === '') {
+                        errors.push('IP地址不能为空');
+                    } else {
+                        // 简单的IP地址格式验证
+                        const ipRegex = /^(\d{1,3}\.){3}\d{1,3}$/;
+                        if (!ipRegex.test(device.ip_address)) {
+                            errors.push('IP地址格式不正确');
+                        }
+                    }
+                    
+                    if (!device.username || device.username.trim() === '') {
+                        errors.push('用户名不能为空');
+                    }
+                    
+                    if (!device.password || device.password.trim() === '') {
+                        errors.push('密码不能为空');
+                    }
+                    
+                    if (device.port < 1 || device.port > 65535) {
+                        errors.push('端口号必须在1-65535之间');
+                    }
+                    
+                    return {
+                        valid: errors.length === 0,
+                        error: errors.join(', ')
+                    };
+                };
+
+                const previewImport = async () => {
+                    importPreviewLoading.value = true;
+                    try {
+                        let content = '';
+                        
+                        if (activeImportTab.value === 'csv' && csvFile.value) {
+                            content = await readFileContent(csvFile.value);
+                        } else if (activeImportTab.value === 'manual' && manualInputText.value.trim()) {
+                            content = manualInputText.value;
+                        } else {
+                            ElMessage.warning('请选择CSV文件或输入设备信息');
+                            return;
+                        }
+                        
+                        const devices = parseCsvContent(content);
+                        const preview = devices.map(device => {
+                            const validation = validateDevice(device);
+                            return {
+                                ...device,
+                                valid: validation.valid,
+                                error: validation.error
+                            };
+                        });
+                        
+                        importPreview.value = preview;
+                        
+                        const validCount = preview.filter(item => item.valid).length;
+                        const invalidCount = preview.filter(item => !item.valid).length;
+                        
+                        ElMessage.success(`预览完成：${validCount}个有效设备，${invalidCount}个无效设备`);
+                        
+                    } catch (error) {
+                        console.error('预览导入失败:', error);
+                        ElMessage.error('预览导入失败: ' + error.message);
+                    } finally {
+                        importPreviewLoading.value = false;
+                    }
+                };
+
+                const readFileContent = (file) => {
+                    return new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = (e) => resolve(e.target.result);
+                        reader.onerror = (e) => reject(new Error('文件读取失败'));
+                        reader.readAsText(file, 'UTF-8');
+                    });
+                };
+
+                const confirmImport = async () => {
+                    const validDevices = importPreview.value.filter(item => item.valid);
+                    if (validDevices.length === 0) {
+                        ElMessage.warning('没有有效的设备可以导入');
+                        return;
+                    }
+                    
+                    importing.value = true;
+                    try {
+                        const response = await fetch('/api/device/batch', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ devices: validDevices })
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            ElMessage.success(`成功导入 ${data.imported_count} 个设备`);
+                            batchImportDialogVisible.value = false;
+                            loadDevices();
+                        } else {
+                            ElMessage.error('批量导入失败: ' + (data.error || '未知错误'));
+                        }
+                    } catch (error) {
+                        console.error('批量导入失败:', error);
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        importing.value = false;
+                    }
                 };
 
                 // 单设备备份方法
@@ -2152,6 +2473,12 @@
                     deviceForm,
                     formRules,
                     dialogTitle,
+                    batchImportDialogVisible,
+                    activeImportTab,
+                    manualInputText,
+                    importPreview,
+                    importPreviewLoading,
+                    importing,
                     backupForm,
                     backupLoading,
                     recentBackups,
@@ -2185,6 +2512,10 @@
                     testConnection,
                     refreshDevices,
                     resetForm,
+                    showBatchImportDialog,
+                    handleCsvFileChange,
+                    previewImport,
+                    confirmImport,
                     startBackup,
                     resetBackupForm,
                     startBatchBackup,
