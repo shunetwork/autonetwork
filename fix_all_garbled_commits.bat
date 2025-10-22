@@ -1,8 +1,8 @@
 @echo off
-REM 直接修复乱码提交信息的脚本
+REM 修复所有乱码提交信息的脚本
 chcp 65001 >nul
 
-echo 正在修复Git提交历史中的乱码信息...
+echo 正在修复所有乱码提交信息...
 echo.
 
 REM 设置Git配置
@@ -23,22 +23,18 @@ echo.
 
 REM 创建修复脚本
 echo #!/bin/sh > fix_commit_msg.sh
-echo if [ "$GIT_COMMIT" = "20e44e81379b8194bbbde0a9191478cccebeee72" ]; then >> fix_commit_msg.sh
-echo   echo "修正乱码提交信息：清理临时文件、更新系统日志、添加Docker部署配置" >> fix_commit_msg.sh
-echo elif [ "$GIT_COMMIT" = "7678cbcb16f161dd0f2da7740279a651b8e322df" ]; then >> fix_commit_msg.sh
-echo   echo "修正乱码提交信息：清理临时文件、更新系统日志、添加Docker部署配置" >> fix_commit_msg.sh
-echo elif [ "$GIT_COMMIT" = "9fc7e487bac194f9a2516702cd7a75e755ba9b7c" ]; then >> fix_commit_msg.sh
+echo if echo "$1" ^| grep -q "ECHO is off"; then >> fix_commit_msg.sh
 echo   echo "修正乱码提交信息：清理临时文件、更新系统日志、添加Docker部署配置" >> fix_commit_msg.sh
 echo else >> fix_commit_msg.sh
 echo   cat >> fix_commit_msg.sh
 echo fi >> fix_commit_msg.sh
 
-echo 使用git filter-branch修复提交信息...
+echo 使用git filter-branch修复所有乱码提交...
 git filter-branch --msg-filter "fix_commit_msg.sh" -- --all
 
 echo.
 echo 清理临时文件...
-rm -f fix_commit_msg.sh
+del fix_commit_msg.sh
 
 echo.
 echo 修复完成！
@@ -49,4 +45,6 @@ echo.
 echo 如果修复成功，请运行以下命令推送到远程仓库：
 echo git push origin master --force-with-lease
 
+echo.
+echo 按任意键退出...
 pause
