@@ -75,8 +75,10 @@ def create_app():
     # 注册蓝图
     from auth import auth_bp
     from api import api_bp
+    from scheduler_api import scheduler_bp
     app.register_blueprint(auth_bp, url_prefix='/auth')
     app.register_blueprint(api_bp, url_prefix='/api')
+    app.register_blueprint(scheduler_bp, url_prefix='/api/scheduler')
     
     # 创建必要的目录
     os.makedirs('logs', exist_ok=True)
@@ -125,6 +127,12 @@ def history():
 @login_required
 def devices():
     """设备管理页面 - Vue 3 SPA"""
+    return send_from_directory('static', 'app.html')
+
+@app.route('/scheduler')
+@login_required
+def scheduler():
+    """计划任务页面 - Vue 3 SPA"""
     return send_from_directory('static', 'app.html')
 
 @app.route('/settings')

@@ -238,3 +238,82 @@ class SystemConfig(db.Model):
             'description': self.description,
             'updated_at': self.updated_at.isoformat() if self.updated_at else None
         }
+
+
+class ScheduledTask(db.Model):
+    """计划任务模型"""
+    __tablename__ = 'scheduled_tasks'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(100), nullable=False)  # 任务名称
+    description = db.Column(db.Text)  # 任务描述
+    task_type = db.Column(db.String(50), nullable=False)  # 任务类型: backup, maintenance
+    frequency_type = db.Column(db.String(20), nullable=False)  # 频率类型: daily, weekly, monthly, custom
+    cron_expression = db.Column(db.String(100))  # CRON表达式
+    frequency_config = db.Column(db.Text)  # 频率配置JSON
+    target_devices = db.Column(db.Text)  # 目标设备ID列表JSON
+    backup_command = db.Column(db.String(200))  # 备份命令
+    is_active = db.Column(db.Boolean, default=True)  # 是否启用
+    last_run = db.Column(db.DateTime)  # 最后运行时间
+    next_run = db.Column(db.DateTime)  # 下次运行时间
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    created_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    
+    # 关联关系
+    executions = db.relationship('TaskExecution', backref='scheduled_task', lazy='dynamic')
+    
+    def to_dict(self):
+        """转换为字典"""
+        return {
+            'id': self.id,
+            'name': self.name,
+            'description': self.description,
+            'task_type': self.task_type,
+            'frequency_type': self.frequency_type,
+            'cron_expression': self.cron_expression,
+            'frequency_config': json.loads(self.frequency_config) if self.frequency_config else None,
+            'target_devices': json.loads(self.target_devices) if self.target_devices else [],
+            'backup_command': self.backup_command,
+            'is_active': self.is_active,
+            'last_run': self.last_run.isoformat() if self.last_run else None,
+            'next_run': self.next_run.isoformat() if self.next_run else None,
+            'created_at': self.created_at.isoformat() if self.created_at else None,
+            'updated_at': self.updated_at.isoformat() if self.updated_at else None,
+            'created_by': self.created_by
+        }
+
+
+class TaskExecution(db.Model):
+    """任务执行记录模型"""
+    __tablename__ = 'task_executions'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    scheduled_task_id = db.Column(db.Integer, db.ForeignKey('scheduled_tasks.id'), nullable=False)
+    status = db.Column(db.String(20), nullable=False)  # pending, running, completed, failed
+    started_at = db.Column(db.DateTime, default=datetime.utcnow)
+    completed_at = db.Column(db.DateTime)
+    duration = db.Column(db.Float)  # 执行时长（秒）
+    result_summary = db.Column(db.Text)  # 执行结果摘要
+    error_message = db.Column(db.Text)  # 错误信息
+    execution_log = db.Column(db.Text)  # 详细执行日志
+    
+    def get_duration(self):
+        """获取执行时长"""
+        if self.completed_at and self.started_at:
+            return (self.completed_at - self.started_at).total_seconds()
+        return None
+    
+    def to_dict(self):
+        """转换为字典"""
+        return {
+            'id': self.id,
+            'scheduled_task_id': self.scheduled_task_id,
+            'status': self.status,
+            'started_at': self.started_at.isoformat() if self.started_at else None,
+            'completed_at': self.completed_at.isoformat() if self.completed_at else None,
+            'duration': self.get_duration(),
+            'result_summary': self.result_summary,
+            'error_message': self.error_message,
+            'execution_log': self.execution_log
+        }
