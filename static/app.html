@@ -2518,32 +2518,35 @@ SW1,192.168.1.10,22,ssh,admin,password789,cisco_ios</pre>
                         // 构建频率配置
                         let frequencyConfig = {};
                         if (taskForm.value.frequency_type === 'daily') {
-                            const [hour, minute] = dailyTime.value.split(':');
+                            const timeValue = dailyTime.value || '02:00';
+                            const [hour, minute] = timeValue.split(':');
                             frequencyConfig = {
                                 type: 'daily',
-                                hour: parseInt(hour),
-                                minute: parseInt(minute)
+                                hour: parseInt(hour) || 2,
+                                minute: parseInt(minute) || 0
                             };
                         } else if (taskForm.value.frequency_type === 'weekly') {
-                            const [hour, minute] = weeklyTime.value.split(':');
+                            const timeValue = weeklyTime.value || '02:00';
+                            const [hour, minute] = timeValue.split(':');
                             frequencyConfig = {
                                 type: 'weekly',
-                                weekday: weeklyConfig.value.weekday,
-                                hour: parseInt(hour),
-                                minute: parseInt(minute)
+                                weekday: weeklyConfig.value?.weekday || 1,
+                                hour: parseInt(hour) || 2,
+                                minute: parseInt(minute) || 0
                             };
                         } else if (taskForm.value.frequency_type === 'monthly') {
-                            const [hour, minute] = monthlyTime.value.split(':');
+                            const timeValue = monthlyTime.value || '02:00';
+                            const [hour, minute] = timeValue.split(':');
                             frequencyConfig = {
                                 type: 'monthly',
-                                day: monthlyConfig.value.day,
-                                hour: parseInt(hour),
-                                minute: parseInt(minute)
+                                day: monthlyConfig.value?.day || 1,
+                                hour: parseInt(hour) || 2,
+                                minute: parseInt(minute) || 0
                             };
                         } else if (taskForm.value.frequency_type === 'custom') {
                             frequencyConfig = {
                                 type: 'custom',
-                                cron: taskForm.value.cron_expression
+                                cron: taskForm.value.cron_expression || ''
                             };
                         }
 

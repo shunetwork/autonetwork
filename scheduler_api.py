@@ -50,6 +50,11 @@ def create_scheduled_task():
     """创建计划任务"""
     try:
         data = request.get_json()
+        if not data:
+            return jsonify({
+                'success': False,
+                'error': '请求数据为空'
+            }), 400
         
         # 验证必填字段
         required_fields = ['name', 'task_type', 'frequency_type']
@@ -62,6 +67,12 @@ def create_scheduled_task():
         
         # 验证频率配置
         frequency_config = data.get('frequency_config', {})
+        if not frequency_config:
+            return jsonify({
+                'success': False,
+                'error': '频率配置不能为空'
+            }), 400
+            
         is_valid, error_msg = FrequencyConfig.validate_config(frequency_config)
         if not is_valid:
             return jsonify({
@@ -74,7 +85,7 @@ def create_scheduled_task():
         if not cron_expr:
             return jsonify({
                 'success': False,
-                'error': '无法生成CRON表达式'
+                'error': f'无法生成CRON表达式，频率配置: {frequency_config}'
             }), 400
         
         # 验证CRON表达式
@@ -82,7 +93,7 @@ def create_scheduled_task():
         if not is_valid:
             return jsonify({
                 'success': False,
-                'error': f'CRON表达式错误: {error_msg}'
+                'error': f'CRON表达式错误: {error_msg}，表达式: {cron_expr}'
             }), 400
         
         # 计算下次运行时间

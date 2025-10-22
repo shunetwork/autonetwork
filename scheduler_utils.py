@@ -24,7 +24,7 @@ class CronValidator:
         Returns:
             (是否有效, 错误信息)
         """
-        if not cron_expr:
+        if not cron_expr or not isinstance(cron_expr, str):
             return False, "CRON表达式不能为空"
         
         # 分割CRON表达式
