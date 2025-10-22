@@ -366,6 +366,99 @@
             white-space: nowrap;
         }
         
+        /* 设备表格优化样式 */
+        .device-table {
+            font-size: 14px;
+        }
+        
+        .device-table .el-table__header th {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 12px 8px;
+        }
+        
+        .device-table .el-table__body td {
+            font-size: 13px;
+            padding: 10px 8px;
+            line-height: 1.4;
+        }
+        
+        .device-table .el-table__body td .cell {
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        /* 优化按钮间距 */
+        .device-table .el-button {
+            margin-right: 4px;
+            margin-bottom: 2px;
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+        
+        .device-table .el-button:last-child {
+            margin-right: 0;
+        }
+        
+        /* 优化标签样式 */
+        .device-table .el-tag {
+            font-size: 11px;
+            padding: 2px 6px;
+            height: auto;
+            line-height: 1.2;
+        }
+        
+        /* 备份历史表格优化样式 */
+        .history-table {
+            font-size: 14px;
+        }
+        
+        .history-table .el-table__header th {
+            font-size: 13px;
+            font-weight: 600;
+            padding: 12px 8px;
+        }
+        
+        .history-table .el-table__body td {
+            font-size: 13px;
+            padding: 10px 8px;
+            line-height: 1.4;
+        }
+        
+        .history-table .el-table__body td .cell {
+            font-size: 13px;
+            line-height: 1.4;
+        }
+        
+        .history-table .el-button {
+            margin-right: 4px;
+            margin-bottom: 2px;
+            font-size: 12px;
+            padding: 4px 8px;
+        }
+        
+        .history-table .el-tag {
+            font-size: 11px;
+            padding: 2px 6px;
+            height: auto;
+            line-height: 1.2;
+        }
+        
+        /* 表格响应式优化 */
+        @media (max-width: 1200px) {
+            .device-table .el-table__body td,
+            .history-table .el-table__body td {
+                font-size: 12px;
+                padding: 8px 6px;
+            }
+            
+            .device-table .el-button,
+            .history-table .el-button {
+                font-size: 11px;
+                padding: 3px 6px;
+            }
+        }
+        
         @media (max-width: 768px) {
             .app-container {
                 flex-direction: column;
@@ -579,25 +672,25 @@
                         设备列表
                     </div>
                     <div class="card-body">
-                        <el-table :data="devices" v-loading="loading" stripe>
-                            <el-table-column prop="alias" label="设备别名" width="120"></el-table-column>
-                            <el-table-column prop="ip_address" label="IP地址" width="140"></el-table-column>
-                            <el-table-column prop="port" label="端口" width="80"></el-table-column>
-                            <el-table-column prop="protocol" label="协议" width="80"></el-table-column>
-                            <el-table-column prop="device_type" label="设备类型" width="100"></el-table-column>
-                            <el-table-column prop="is_active" label="状态" width="80">
+                        <el-table :data="devices" v-loading="loading" stripe class="device-table">
+                            <el-table-column prop="alias" label="设备别名" width="120" show-overflow-tooltip></el-table-column>
+                            <el-table-column prop="ip_address" label="IP地址" width="140" show-overflow-tooltip></el-table-column>
+                            <el-table-column prop="port" label="端口" width="70" align="center"></el-table-column>
+                            <el-table-column prop="protocol" label="协议" width="70" align="center"></el-table-column>
+                            <el-table-column prop="device_type" label="设备类型" width="150" show-overflow-tooltip></el-table-column>
+                            <el-table-column prop="is_active" label="状态" width="80" align="center">
                                 <template #default="scope">
-                                    <el-tag :type="scope.row.is_active ? 'success' : 'danger'">
+                                    <el-tag :type="scope.row.is_active ? 'success' : 'danger'" size="small">
                                         {{ scope.row.is_active ? '活跃' : '禁用' }}
                                     </el-tag>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="last_backup" label="最后备份" width="160">
+                            <el-table-column prop="last_backup" label="最后备份" width="200" show-overflow-tooltip>
                                 <template #default="scope">
                                     {{ scope.row.last_backup ? formatTime(scope.row.last_backup) : '未备份' }}
                                 </template>
                             </el-table-column>
-                            <el-table-column label="操作" width="200">
+                            <el-table-column label="操作" width="220" align="center">
                                 <template #default="scope">
                                     <el-button size="small" @click="editDevice(scope.row)">编辑</el-button>
                                     <el-button size="small" type="success" @click="testConnection(scope.row)">测试</el-button>
@@ -828,22 +921,22 @@
                         备份历史记录
                     </div>
                     <div class="card-body">
-                        <el-table :data="historyList" v-loading="historyLoading" stripe>
-                            <el-table-column prop="device_alias" label="设备" width="120"></el-table-column>
-                            <el-table-column prop="backup_command" label="命令" width="150"></el-table-column>
-                            <el-table-column prop="status" label="状态" width="100">
+                        <el-table :data="historyList" v-loading="historyLoading" stripe class="history-table">
+                            <el-table-column prop="device_alias" label="设备" width="100" show-overflow-tooltip></el-table-column>
+                            <el-table-column prop="backup_command" label="命令" width="180" show-overflow-tooltip></el-table-column>
+                            <el-table-column prop="status" label="状态" width="80" align="center">
                                 <template #default="scope">
-                                    <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'">
+                                    <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'" size="small">
                                         {{ scope.row.status === 'success' ? '成功' : '失败' }}
                                     </el-tag>
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="created_at" label="创建时间" width="160">
+                            <el-table-column prop="created_at" label="创建时间" width="180" show-overflow-tooltip>
                                 <template #default="scope">
                                     {{ formatTime(scope.row.created_at) }}
                                 </template>
                             </el-table-column>
-                            <el-table-column prop="duration" label="耗时" width="80">
+                            <el-table-column prop="duration" label="耗时" width="100" align="center">
                                 <template #default="scope">
                                     {{ scope.row.duration ? scope.row.duration.toFixed(2) + 's' : '-' }}
                                 </template>
