@@ -996,9 +996,10 @@
                                     {{ scope.row.duration ? scope.row.duration.toFixed(2) + 's' : '-' }}
                                 </template>
                             </el-table-column>
-                            <el-table-column label="操作" width="120">
+                            <el-table-column label="操作" width="180">
                                 <template #default="scope">
                                     <el-button size="small" @click="viewBackup(scope.row)">查看</el-button>
+                                    <el-button size="small" type="primary" @click="downloadBackup(scope.row)" :disabled="scope.row.status !== 'success'">下载</el-button>
                                     <el-button size="small" type="danger" @click="deleteBackup(scope.row)">删除</el-button>
                                 </template>
                             </el-table-column>
@@ -1758,6 +1759,31 @@
                     }
                 };
 
+                const downloadBackup = async (backup) => {
+                    if (backup.status !== 'success') {
+                        ElMessage.warning('只能下载成功的备份文件');
+                        return;
+                    }
+                    
+                    try {
+                        // 创建下载链接
+                        const downloadUrl = `/api/backup/download/${backup.id}`;
+                        
+                        // 创建一个临时的a标签来触发下载
+                        const link = document.createElement('a');
+                        link.href = downloadUrl;
+                        link.download = `${backup.device_alias}_${backup.created_at.replace(/[:\s]/g, '_')}_backup.txt`;
+                        document.body.appendChild(link);
+                        link.click();
+                        document.body.removeChild(link);
+                        
+                        ElMessage.success('开始下载备份文件');
+                    } catch (error) {
+                        console.error('下载备份文件失败:', error);
+                        ElMessage.error('下载失败，请稍后重试');
+                    }
+                };
+
                 // 系统日志方法
                 const loadLogs = async (showError = false) => {
                     logsLoading.value = true;
@@ -2085,6 +2111,7 @@
                     refreshHistory,
                     viewBackup,
                     deleteBackup,
+                    downloadBackup,
                     loadLogs,
                     refreshLogs,
                     clearLogs,
