@@ -4735,3 +4735,30 @@ with app.app_context(). See the documentation for more information.
 2025-10-22 16:09:45,234 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:09:45] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
 2025-10-22 16:09:45,237 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:09:45] "GET /api/backup/recent HTTP/1.1" 200 -
 2025-10-22 16:09:45,243 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:09:45] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 16:09:48,605 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:09:48] "[33mDELETE /api/logs/clear HTTP/1.1[0m" 404 -
+2025-10-22 16:12:00,075 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\api.py', reloading
+2025-10-22 16:12:00,075 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 16:12:00,077 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 16:12:00,271 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 16:12:01,425 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 16:12:01,427 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 16:12:01,427 - scheduler - INFO - 备份调度器已启动
+2025-10-22 16:12:01,437 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 16:12:01,442 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 16:12:19,551 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\api.py', reloading
+2025-10-22 16:12:19,551 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 16:12:19,554 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 16:12:19,752 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 16:12:20,858 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 16:12:20,860 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 16:12:20,861 - scheduler - INFO - 备份调度器已启动
+2025-10-22 16:12:20,870 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 16:12:20,875 - werkzeug - INFO -  * Debugger PIN: 907-116-072
