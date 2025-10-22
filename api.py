@@ -1039,7 +1039,7 @@ def get_backup_history():
                 'backup_command': task.backup_command,
                 'status': task.status,
                 'created_at': task.created_at.isoformat(),
-                'duration': task.duration
+                'duration': task.get_duration()
             })
         
         return jsonify({
