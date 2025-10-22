@@ -4762,3 +4762,30 @@ with app.app_context(). See the documentation for more information.
 2025-10-22 16:12:20,861 - scheduler - INFO - 备份调度器已启动
 2025-10-22 16:12:20,870 - werkzeug - WARNING -  * Debugger is active!
 2025-10-22 16:12:20,875 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 16:16:46,749 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:16:46] "GET /devices HTTP/1.1" 200 -
+2025-10-22 16:16:47,070 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:16:47] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 16:16:47,088 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:16:47] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 16:16:47,092 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:16:47] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 16:16:47,101 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:16:47] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 16:16:47,105 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:16:47] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 16:16:47,114 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:16:47] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 16:16:47,134 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:16:47] "GET /api/system/info HTTP/1.1" 200 -
+2025-10-22 16:17:00,119 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:00] "[32mGET / HTTP/1.1[0m" 302 -
+2025-10-22 16:17:00,148 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:00] "GET /auth/login?next=/ HTTP/1.1" 200 -
+2025-10-22 16:17:09,159 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:09] "[32mPOST /auth/login?next=/ HTTP/1.1[0m" 302 -
+2025-10-22 16:17:09,165 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:09] "GET / HTTP/1.1" 200 -
+2025-10-22 16:17:09,718 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:09] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 16:17:09,724 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:09] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 16:17:09,730 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:09] "GET /api/system/info HTTP/1.1" 200 -
+2025-10-22 16:17:09,731 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:09] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 16:17:09,737 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:09] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 16:17:09,740 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:09] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 16:17:09,747 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:09] "GET /api/backup/history HTTP/1.1" 200 -
+2025-10-22 16:17:18,681 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /compare HTTP/1.1" 200 -
+2025-10-22 16:17:18,842 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 16:17:18,845 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/settings HTTP/1.1" 200 -
+2025-10-22 16:17:18,848 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 16:17:18,853 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/system/info HTTP/1.1" 200 -
+2025-10-22 16:17:18,863 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/logs/entries?page=1&per_page=20 HTTP/1.1" 200 -
+2025-10-22 16:17:18,864 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 16:17:18,872 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 16:17:18] "GET /api/backup/history HTTP/1.1" 200 -
