@@ -44,23 +44,66 @@
 ## 快速开始
 
 ### 环境要求
-- Python 3.8+
-- pip
+- Python 3.8+ 或 Docker
+- pip 或 Docker Compose
 
-### 安装步骤
+### 方式一：Docker部署（推荐）
 
-1. **克隆项目**
+#### 1. 克隆项目
 ```bash
 git clone <repository-url>
 cd autonetwork
 ```
 
-2. **安装依赖**
+#### 2. 创建必要目录
+```bash
+mkdir -p logs backups data
+```
+
+#### 3. 配置环境变量
+```bash
+# 复制环境变量模板（如果存在）
+cp .env.example .env
+
+# 编辑环境变量（重要：修改默认密钥）
+nano .env
+```
+
+**重要配置项：**
+- `SECRET_KEY`: 修改为随机字符串
+- `ENCRYPTION_KEY`: 修改为随机字符串
+- 其他配置根据需要调整
+
+#### 4. 启动服务
+```bash
+# 构建并启动服务
+docker-compose up -d
+
+# 查看服务状态
+docker-compose ps
+
+# 查看日志
+docker-compose logs -f autonetwork
+```
+
+#### 5. 访问系统
+- 访问地址：http://localhost:5000
+- 默认账号：admin / admin123
+
+### 方式二：传统安装
+
+#### 1. 克隆项目
+```bash
+git clone <repository-url>
+cd autonetwork
+```
+
+#### 2. 安装依赖
 ```bash
 pip install -r requirements.txt
 ```
 
-3. **配置环境变量**
+#### 3. 配置环境变量
 ```bash
 # 设置安全密钥（生产环境必须）
 export SECRET_KEY="your-secret-key-here"
@@ -72,12 +115,12 @@ export BACKUP_TIMEOUT=300
 export COMPRESS_BACKUPS=true
 ```
 
-4. **启动系统**
+#### 4. 启动系统
 ```bash
 python run.py
 ```
 
-5. **访问系统**
+#### 5. 访问系统
 - 打开浏览器访问: http://localhost:5000
 - 默认账号: admin / admin123
 
@@ -143,6 +186,12 @@ autonetwork/
 ├── config.py             # 配置文件
 ├── run.py                # 启动脚本
 ├── requirements.txt       # 依赖包
+├── Dockerfile            # Docker镜像构建文件
+├── docker-compose.yml    # Docker Compose配置
+├── docker-compose.dev.yml # 开发环境配置
+├── docker-entrypoint.sh  # Docker入口脚本
+├── deploy.sh             # Linux/macOS部署脚本
+├── deploy.bat            # Windows部署脚本
 ├── templates/            # 模板文件
 │   ├── base.html
 │   ├── index.html
@@ -155,6 +204,15 @@ autonetwork/
 │   └── auth/
 │       └── login.html
 ├── static/               # 静态文件
+│   ├── app.html          # Vue 3 SPA应用
+│   ├── login.html        # 统一登录页面
+│   └── ...
+├── tests/                # 测试脚本目录
+│   ├── README.md         # 测试说明
+│   ├── test_system.py    # 系统功能测试
+│   ├── test_connection.py # 设备连接测试
+│   ├── test_backup.py    # 备份功能测试
+│   └── ...
 ├── logs/                 # 日志文件
 ├── backups/              # 备份文件
 └── uploads/              # 上传文件
@@ -182,6 +240,103 @@ autonetwork/
 | `show interfaces` | 接口信息 |
 | `show ip route` | 路由表 |
 
+## Docker部署详细说明
+
+### 生产环境部署
+
+#### 使用Nginx反向代理
+
+1. **创建nginx.conf**
+```nginx
+events {
+    worker_connections 1024;
+}
+
+http {
+    upstream autonetwork {
+        server autonetwork:5000;
+    }
+
+    server {
+        listen 80;
+        server_name your-domain.com;
+
+        location / {
+            proxy_pass http://autonetwork;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }
+    }
+}
+```
+
+2. **更新docker-compose.yml**
+取消注释nginx服务配置，并修改域名。
+
+#### 使用外部数据库
+
+1. **修改docker-compose.yml**
+取消注释postgres服务配置。
+
+2. **更新应用配置**
+修改应用的环境变量，指向外部数据库。
+
+### 数据持久化
+
+#### 重要目录
+- `/app/logs`: 系统日志
+- `/app/backups`: 备份文件
+- `/app/data`: 数据库文件
+
+#### 备份数据
+```bash
+# 备份所有数据
+docker-compose exec autonetwork tar -czf /tmp/backup.tar.gz /app/data /app/backups /app/logs
+
+# 复制备份文件
+docker cp autonetwork:/tmp/backup.tar.gz ./backup-$(date +%Y%m%d).tar.gz
+```
+
+### 监控和维护
+
+#### 查看服务状态
+```bash
+# 查看容器状态
+docker-compose ps
+
+# 查看资源使用情况
+docker stats
+
+# 查看日志
+docker-compose logs -f
+```
+
+#### 更新服务
+```bash
+# 停止服务
+docker-compose down
+
+# 拉取最新代码
+git pull
+
+# 重新构建并启动
+docker-compose up -d --build
+```
+
+#### 清理资源
+```bash
+# 清理未使用的镜像
+docker image prune
+
+# 清理未使用的容器
+docker container prune
+
+# 清理所有未使用的资源
+docker system prune
+```
+
 ## 故障排除
 
 ### 常见问题
@@ -201,8 +356,14 @@ autonetwork/
    - 验证命令语法
    - 确认设备类型设置
 
+4. **Docker部署问题**
+   - 端口冲突：检查端口占用 `netstat -tulpn | grep :5000`
+   - 权限问题：设置目录权限 `chmod 755 logs backups data`
+   - 内存不足：增加Docker内存限制
+
 ### 日志查看
 - 系统日志: `logs/backup_system.log`
+- Docker日志: `docker-compose logs autonetwork`
 - 任务日志: 通过Web界面查看
 - 错误日志: 检查设备连接日志
 
