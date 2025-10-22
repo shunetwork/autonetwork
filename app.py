@@ -106,8 +106,8 @@ def index():
 @app.route('/backup/single')
 @login_required
 def backup_single():
-    """单设备备份页面 - Vue 3前端"""
-    return send_from_directory('static', 'single_backup.html')
+    """单设备备份页面 - Vue 3 SPA"""
+    return send_from_directory('static', 'app.html')
 
 @app.route('/backup/batch')
 @login_required
@@ -124,8 +124,8 @@ def history():
 @app.route('/devices')
 @login_required
 def devices():
-    """设备管理页面 - Vue 3前端"""
-    return send_from_directory('static', 'devices.html')
+    """设备管理页面 - Vue 3 SPA"""
+    return send_from_directory('static', 'app.html')
 
 @app.route('/settings')
 @login_required

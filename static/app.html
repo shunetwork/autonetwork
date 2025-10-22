@@ -403,6 +403,182 @@
                 </div>
             </div>
 
+            <!-- 设备管理页面 -->
+            <div v-else-if="currentPage === 'devices'">
+                <div class="page-header">
+                    <div class="page-title">
+                        <i class="el-icon-server"></i>
+                        设备管理
+                    </div>
+                    <div class="page-actions">
+                        <el-button type="primary" @click="showAddDialog">
+                            <i class="el-icon-plus"></i>
+                            添加设备
+                        </el-button>
+                        <el-button @click="refreshDevices">
+                            <i class="el-icon-refresh"></i>
+                            刷新
+                        </el-button>
+                    </div>
+                </div>
+
+                <!-- 设备列表 -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="el-icon-server"></i>
+                        设备列表
+                    </div>
+                    <div class="card-body">
+                        <el-table :data="devices" v-loading="loading" stripe>
+                            <el-table-column prop="alias" label="设备别名" width="120"></el-table-column>
+                            <el-table-column prop="ip_address" label="IP地址" width="140"></el-table-column>
+                            <el-table-column prop="port" label="端口" width="80"></el-table-column>
+                            <el-table-column prop="protocol" label="协议" width="80"></el-table-column>
+                            <el-table-column prop="device_type" label="设备类型" width="100"></el-table-column>
+                            <el-table-column prop="is_active" label="状态" width="80">
+                                <template #default="scope">
+                                    <el-tag :type="scope.row.is_active ? 'success' : 'danger'">
+                                        {{ scope.row.is_active ? '活跃' : '禁用' }}
+                                    </el-tag>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="last_backup" label="最后备份" width="160">
+                                <template #default="scope">
+                                    {{ scope.row.last_backup ? formatTime(scope.row.last_backup) : '未备份' }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column label="操作" width="200">
+                                <template #default="scope">
+                                    <el-button size="small" @click="editDevice(scope.row)">编辑</el-button>
+                                    <el-button size="small" type="success" @click="testConnection(scope.row)">测试</el-button>
+                                    <el-button size="small" type="danger" @click="deleteDevice(scope.row)">删除</el-button>
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </div>
+
+                <!-- 添加/编辑设备对话框 -->
+                <el-dialog v-model="dialogVisible" :title="dialogTitle" width="600px">
+                    <el-form :model="deviceForm" :rules="formRules" ref="formRef" label-width="100px">
+                        <el-form-item label="设备别名" prop="alias">
+                            <el-input v-model="deviceForm.alias" placeholder="请输入设备别名"></el-input>
+                        </el-form-item>
+                        <el-form-item label="IP地址" prop="ip_address">
+                            <el-input v-model="deviceForm.ip_address" placeholder="请输入IP地址"></el-input>
+                        </el-form-item>
+                        <el-form-item label="端口" prop="port">
+                            <el-input-number v-model="deviceForm.port" :min="1" :max="65535"></el-input-number>
+                        </el-form-item>
+                        <el-form-item label="协议" prop="protocol">
+                            <el-select v-model="deviceForm.protocol">
+                                <el-option label="SSH" value="ssh"></el-option>
+                                <el-option label="Telnet" value="telnet"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="用户名" prop="username">
+                            <el-input v-model="deviceForm.username" placeholder="请输入用户名"></el-input>
+                        </el-form-item>
+                        <el-form-item label="密码" prop="password">
+                            <el-input v-model="deviceForm.password" type="password" placeholder="请输入密码"></el-input>
+                        </el-form-item>
+                        <el-form-item label="设备类型" prop="device_type">
+                            <el-select v-model="deviceForm.device_type">
+                                <el-option label="Cisco IOS" value="cisco_ios"></el-option>
+                                <el-option label="Cisco NX-OS" value="cisco_nxos"></el-option>
+                                <el-option label="Huawei" value="huawei"></el-option>
+                            </el-select>
+                        </el-form-item>
+                        <el-form-item label="状态">
+                            <el-switch v-model="deviceForm.is_active"></el-switch>
+                        </el-form-item>
+                    </el-form>
+                    <template #footer>
+                        <el-button @click="dialogVisible = false">取消</el-button>
+                        <el-button type="primary" @click="saveDevice" :loading="saving">保存</el-button>
+                    </template>
+                </el-dialog>
+            </div>
+
+            <!-- 单设备备份页面 -->
+            <div v-else-if="currentPage === 'single-backup'">
+                <div class="page-header">
+                    <div class="page-title">
+                        <i class="el-icon-document-copy"></i>
+                        单设备备份
+                    </div>
+                </div>
+
+                <!-- 备份配置 -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="el-icon-setting"></i>
+                        备份配置
+                    </div>
+                    <div class="card-body">
+                        <el-form :model="backupForm" label-width="100px">
+                            <el-form-item label="选择设备" required>
+                                <el-select v-model="backupForm.device_id" placeholder="请选择设备" style="width: 100%">
+                                    <el-option 
+                                        v-for="device in devices" 
+                                        :key="device.id" 
+                                        :label="`${device.alias} (${device.ip_address})`" 
+                                        :value="device.id">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="备份命令" required>
+                                <el-input v-model="backupForm.command" placeholder="请输入备份命令"></el-input>
+                            </el-form-item>
+                            <el-form-item label="任务类型">
+                                <el-radio-group v-model="backupForm.task_type">
+                                    <el-radio label="manual">手动备份</el-radio>
+                                    <el-radio label="scheduled">定时备份</el-radio>
+                                </el-radio-group>
+                            </el-form-item>
+                            <el-form-item label="重试次数">
+                                <el-input-number v-model="backupForm.retry_count" :min="0" :max="5"></el-input-number>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="startBackup" :loading="backupLoading">开始备份</el-button>
+                                <el-button @click="resetBackupForm">重置</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </div>
+
+                <!-- 最近备份记录 -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="el-icon-time"></i>
+                        最近备份记录
+                    </div>
+                    <div class="card-body">
+                        <el-table :data="recentBackups" v-loading="backupLoading" stripe>
+                            <el-table-column prop="device_alias" label="设备" width="120"></el-table-column>
+                            <el-table-column prop="backup_command" label="命令" width="150"></el-table-column>
+                            <el-table-column prop="status" label="状态" width="100">
+                                <template #default="scope">
+                                    <el-tag :type="scope.row.status === 'success' ? 'success' : 'danger'">
+                                        {{ scope.row.status === 'success' ? '成功' : '失败' }}
+                                    </el-tag>
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="created_at" label="创建时间" width="160">
+                                <template #default="scope">
+                                    {{ formatTime(scope.row.created_at) }}
+                                </template>
+                            </el-table-column>
+                            <el-table-column prop="duration" label="耗时" width="80">
+                                <template #default="scope">
+                                    {{ scope.row.duration ? scope.row.duration.toFixed(2) + 's' : '-' }}
+                                </template>
+                            </el-table-column>
+                        </el-table>
+                    </div>
+                </div>
+            </div>
+
             <!-- 其他页面内容 -->
             <div v-else>
                 <div class="page-header">
@@ -451,6 +627,39 @@
                     successCount: 0,
                     failedCount: 0
                 });
+
+                // 设备管理相关数据
+                const devices = ref([]);
+                const loading = ref(false);
+                const dialogVisible = ref(false);
+                const saving = ref(false);
+                const isEditing = ref(false);
+                const deviceForm = ref({
+                    alias: '',
+                    ip_address: '',
+                    port: 22,
+                    protocol: 'ssh',
+                    username: '',
+                    password: '',
+                    device_type: 'cisco_ios',
+                    is_active: true
+                });
+                const formRules = ref({
+                    alias: [{ required: true, message: '请输入设备别名', trigger: 'blur' }],
+                    ip_address: [{ required: true, message: '请输入IP地址', trigger: 'blur' }],
+                    username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
+                    password: [{ required: true, message: '请输入密码', trigger: 'blur' }]
+                });
+
+                // 单设备备份相关数据
+                const backupForm = ref({
+                    device_id: '',
+                    command: 'show running-config',
+                    task_type: 'manual',
+                    retry_count: 3
+                });
+                const backupLoading = ref(false);
+                const recentBackups = ref([]);
 
                 // 页面配置
                 const pageConfig = {
@@ -525,19 +734,235 @@
                     }
                 };
 
+                // 设备管理方法
+                const loadDevices = async () => {
+                    loading.value = true;
+                    try {
+                        const response = await fetch('/api/device/list');
+                        const data = await response.json();
+                        if (data.success) {
+                            devices.value = data.devices;
+                        }
+                    } catch (error) {
+                        console.error('加载设备列表失败:', error);
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+
+                const showAddDialog = () => {
+                    isEditing.value = false;
+                    resetForm();
+                    dialogVisible.value = true;
+                };
+
+                const editDevice = (device) => {
+                    isEditing.value = true;
+                    deviceForm.value = { ...device };
+                    dialogVisible.value = true;
+                };
+
+                const saveDevice = async () => {
+                    saving.value = true;
+                    try {
+                        const url = isEditing.value ? `/api/device/${deviceForm.value.id}` : '/api/device';
+                        const method = isEditing.value ? 'PUT' : 'POST';
+                        
+                        const response = await fetch(url, {
+                            method: method,
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(deviceForm.value)
+                        });
+                        
+                        const data = await response.json();
+                        if (data.success) {
+                            ElMessage.success(isEditing.value ? '设备更新成功' : '设备添加成功');
+                            dialogVisible.value = false;
+                            loadDevices();
+                        } else {
+                            ElMessage.error(data.error || '操作失败');
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        saving.value = false;
+                    }
+                };
+
+                const deleteDevice = async (device) => {
+                    if (confirm(`确定要删除设备 ${device.alias} 吗？`)) {
+                        try {
+                            const response = await fetch(`/api/device/${device.id}`, { method: 'DELETE' });
+                            const data = await response.json();
+                            if (data.success) {
+                                ElMessage.success('设备删除成功');
+                                loadDevices();
+                            } else {
+                                ElMessage.error(data.error || '删除失败');
+                            }
+                        } catch (error) {
+                            ElMessage.error('网络错误，请稍后重试');
+                        }
+                    }
+                };
+
+                const testConnection = async (device) => {
+                    loadingVisible.value = true;
+                    try {
+                        const response = await fetch('/api/device/test', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ device_id: device.id })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            ElMessage.success('连接测试成功');
+                        } else {
+                            ElMessage.error('连接测试失败: ' + data.error);
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        loadingVisible.value = false;
+                    }
+                };
+
+                const refreshDevices = () => {
+                    loadDevices();
+                };
+
+                const resetForm = () => {
+                    deviceForm.value = {
+                        alias: '',
+                        ip_address: '',
+                        port: 22,
+                        protocol: 'ssh',
+                        username: '',
+                        password: '',
+                        device_type: 'cisco_ios',
+                        is_active: true
+                    };
+                };
+
+                // 单设备备份方法
+                const loadRecentBackups = async () => {
+                    try {
+                        const response = await fetch('/api/backup/recent');
+                        const data = await response.json();
+                        if (data.success) {
+                            recentBackups.value = data.tasks.slice(0, 10);
+                        }
+                    } catch (error) {
+                        console.error('加载备份记录失败:', error);
+                    }
+                };
+
+                const startBackup = async () => {
+                    if (!backupForm.value.device_id) {
+                        ElMessage.warning('请选择设备');
+                        return;
+                    }
+                    
+                    backupLoading.value = true;
+                    try {
+                        const response = await fetch('/api/backup/start', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(backupForm.value)
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            ElMessage.success('备份任务已启动');
+                            loadRecentBackups();
+                        } else {
+                            ElMessage.error(data.error || '备份启动失败');
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        backupLoading.value = false;
+                    }
+                };
+
+                const resetBackupForm = () => {
+                    backupForm.value = {
+                        device_id: '',
+                        command: 'show running-config',
+                        task_type: 'manual',
+                        retry_count: 3
+                    };
+                };
+
+                // 工具方法
+                const formatTime = (timeStr) => {
+                    if (!timeStr) return '-';
+                    return new Date(timeStr).toLocaleString('zh-CN');
+                };
+
+                // 计算属性
+                const dialogTitle = computed(() => isEditing.value ? '编辑设备' : '添加设备');
+
+                // 根据URL路径设置当前页面
+                const setCurrentPageFromURL = () => {
+                    const path = window.location.pathname;
+                    if (path === '/devices') {
+                        currentPage.value = 'devices';
+                    } else if (path === '/backup/single') {
+                        currentPage.value = 'single-backup';
+                    } else if (path === '/backup/batch') {
+                        currentPage.value = 'batch-backup';
+                    } else if (path === '/history') {
+                        currentPage.value = 'history';
+                    } else if (path === '/logs') {
+                        currentPage.value = 'logs';
+                    } else if (path === '/settings') {
+                        currentPage.value = 'settings';
+                    } else if (path === '/compare') {
+                        window.location.href = '/compare';
+                        return;
+                    } else {
+                        currentPage.value = 'home';
+                    }
+                };
+
                 // 组件挂载时加载数据
                 onMounted(() => {
+                    setCurrentPageFromURL();
                     refreshData();
+                    loadDevices();
+                    loadRecentBackups();
                 });
 
                 return {
                     currentPage,
                     loadingVisible,
                     statistics,
+                    devices,
+                    loading,
+                    dialogVisible,
+                    saving,
+                    isEditing,
+                    deviceForm,
+                    formRules,
+                    dialogTitle,
+                    backupForm,
+                    backupLoading,
+                    recentBackups,
                     navigateTo,
                     getPageTitle,
                     getPageIcon,
-                    refreshData
+                    refreshData,
+                    loadDevices,
+                    showAddDialog,
+                    editDevice,
+                    saveDevice,
+                    deleteDevice,
+                    testConnection,
+                    refreshDevices,
+                    resetForm,
+                    startBackup,
+                    resetBackupForm,
+                    formatTime
                 };
             }
         });
