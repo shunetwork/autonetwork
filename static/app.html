@@ -1256,10 +1256,14 @@
                     
                     backupLoading.value = true;
                     try {
-                        const response = await fetch('/api/backup/start', {
+                        const response = await fetch('/api/backup/single', {
                             method: 'POST',
                             headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(backupForm.value)
+                            body: JSON.stringify({
+                                device_id: backupForm.value.device_id,
+                                backup_command: backupForm.value.command,
+                                test_connection: true
+                            })
                         });
                         const data = await response.json();
                         if (data.success) {

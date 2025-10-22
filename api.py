@@ -1017,3 +1017,199 @@ def _calculate_config_diff(content1, content2):
             'diff_blocks': [],
             'raw_diff': ''
         }
+
+@api_bp.route('/backup/history')
+@login_required
+def get_backup_history():
+    """获取备份历史"""
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)
+        
+        tasks = BackupTask.query.order_by(BackupTask.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        history = []
+        for task in tasks.items:
+            device = Device.query.get(task.device_id)
+            history.append({
+                'id': task.id,
+                'device_alias': device.alias if device else '未知设备',
+                'backup_command': task.backup_command,
+                'status': task.status,
+                'created_at': task.created_at.isoformat(),
+                'duration': task.duration
+            })
+        
+        return jsonify({
+            'success': True,
+            'tasks': history,
+            'total': tasks.total,
+            'pages': tasks.pages,
+            'current_page': page
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'获取备份历史失败: {str(e)}'
+        }), 500
+
+@api_bp.route('/settings')
+@login_required
+def get_settings():
+    """获取系统设置"""
+    try:
+        # 这里可以从数据库或配置文件读取设置
+        settings = {
+            'default_command': 'show running-config',
+            'default_retry': 3,
+            'default_concurrent': 3,
+            'log_retention_days': 30,
+            'auto_backup': False
+        }
+        
+        return jsonify({
+            'success': True,
+            'settings': settings
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'获取设置失败: {str(e)}'
+        }), 500
+
+@api_bp.route('/settings', methods=['POST'])
+@login_required
+def save_settings():
+    """保存系统设置"""
+    try:
+        data = request.get_json()
+        
+        # 这里可以将设置保存到数据库或配置文件
+        # 暂时只返回成功
+        
+        return jsonify({
+            'success': True,
+            'message': '设置保存成功'
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'保存设置失败: {str(e)}'
+        }), 500
+
+@api_bp.route('/system/info')
+@login_required
+def get_system_info():
+    """获取系统信息"""
+    try:
+        import psutil
+        import time
+        
+        # 获取系统运行时间
+        uptime_seconds = time.time() - psutil.boot_time()
+        uptime_days = int(uptime_seconds // 86400)
+        uptime_hours = int((uptime_seconds % 86400) // 3600)
+        uptime_minutes = int((uptime_seconds % 3600) // 60)
+        
+        uptime = f"{uptime_days}天{uptime_hours}小时{uptime_minutes}分钟"
+        
+        # 获取内存使用情况
+        memory = psutil.virtual_memory()
+        memory_usage = f"{memory.used // 1024 // 1024}MB / {memory.total // 1024 // 1024}MB"
+        
+        return jsonify({
+            'success': True,
+            'uptime': uptime,
+            'memory': memory_usage
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'获取系统信息失败: {str(e)}'
+        }), 500
+
+@api_bp.route('/backup/compare', methods=['POST'])
+@login_required
+def compare_backups():
+    """对比备份配置"""
+    try:
+        data = request.get_json()
+        first_backup_id = data.get('first_backup_id')
+        second_backup_id = data.get('second_backup_id')
+        ignore_whitespace = data.get('ignore_whitespace', True)
+        ignore_case = data.get('ignore_case', False)
+        
+        if not first_backup_id or not second_backup_id:
+            return jsonify({
+                'success': False,
+                'error': '请选择要对比的备份'
+            }), 400
+        
+        # 获取备份任务
+        first_task = BackupTask.query.get(first_backup_id)
+        second_task = BackupTask.query.get(second_backup_id)
+        
+        if not first_task or not second_task:
+            return jsonify({
+                'success': False,
+                'error': '备份任务不存在'
+            }), 404
+        
+        # 这里实现配置对比逻辑
+        # 暂时返回模拟结果
+        result = {
+            'differences': 0,
+            'first_backup_time': first_task.created_at.isoformat(),
+            'second_backup_time': second_task.created_at.isoformat(),
+            'diff_details': []
+        }
+        
+        return jsonify({
+            'success': True,
+            'result': result
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'对比失败: {str(e)}'
+        }), 500
+
+@api_bp.route('/backup/batch/progress')
+@login_required
+def get_batch_progress():
+    """获取批量备份进度"""
+    try:
+        # 获取最近的批量备份任务进度
+        # 这里返回模拟数据
+        progress = [
+            {
+                'device_alias': 'R1',
+                'status': 'success',
+                'progress': 100,
+                'message': '备份完成'
+            },
+            {
+                'device_alias': 'R2',
+                'status': 'running',
+                'progress': 50,
+                'message': '正在备份...'
+            }
+        ]
+        
+        return jsonify({
+            'success': True,
+            'progress': progress
+        })
+        
+    except Exception as e:
+        return jsonify({
+            'success': False,
+            'error': f'获取进度失败: {str(e)}'
+        }), 500

@@ -2698,3 +2698,75 @@ with app.app_context(). See the documentation for more information.
 2025-10-22 09:19:09,166 - apscheduler.scheduler - INFO - Scheduler has been shut down
 2025-10-22 09:19:09,168 - scheduler - INFO - 备份调度器已关闭
 2025-10-22 09:19:09,344 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 09:19:10,341 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 09:19:10,343 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 09:19:10,343 - scheduler - INFO - 备份调度器已启动
+2025-10-22 09:19:10,354 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 09:19:10,359 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 09:19:48,545 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\app.py', reloading
+2025-10-22 09:19:48,545 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 09:19:48,547 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 09:19:48,736 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 09:19:49,657 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 09:19:49,658 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 09:19:49,658 - scheduler - INFO - 备份调度器已启动
+2025-10-22 09:19:49,666 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 09:19:49,670 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 09:20:33,156 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:33] "GET /backup/single HTTP/1.1" 200 -
+2025-10-22 09:20:33,372 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:33] "[33mGET /api/backup/history HTTP/1.1[0m" 404 -
+2025-10-22 09:20:33,373 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:33] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 09:20:33,378 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:33] "[33mGET /api/settings HTTP/1.1[0m" 404 -
+2025-10-22 09:20:33,384 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:33] "[33mGET /api/system/info HTTP/1.1[0m" 404 -
+2025-10-22 09:20:33,388 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:33] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 09:20:33,389 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:33] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 09:20:33,398 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:33] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 09:20:36,328 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:36] "GET /compare HTTP/1.1" 200 -
+2025-10-22 09:20:36,478 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:36] "[33mGET /api/backup/history HTTP/1.1[0m" 404 -
+2025-10-22 09:20:36,490 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:36] "[33mGET /api/settings HTTP/1.1[0m" 404 -
+2025-10-22 09:20:36,493 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:36] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 09:20:36,495 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:36] "[33mGET /api/system/info HTTP/1.1[0m" 404 -
+2025-10-22 09:20:36,498 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:36] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 09:20:36,503 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:36] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 09:20:36,503 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:36] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 09:20:38,464 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:38] "GET /api/backup/device/1 HTTP/1.1" 200 -
+2025-10-22 09:20:46,017 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:46] "GET /devices HTTP/1.1" 200 -
+2025-10-22 09:20:46,117 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:46] "[33mGET /api/backup/history HTTP/1.1[0m" 404 -
+2025-10-22 09:20:46,119 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:46] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 09:20:46,123 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:46] "[33mGET /api/settings HTTP/1.1[0m" 404 -
+2025-10-22 09:20:46,126 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:46] "[33mGET /api/system/info HTTP/1.1[0m" 404 -
+2025-10-22 09:20:46,128 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:46] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 09:20:46,130 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:46] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 09:20:46,131 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:46] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 09:20:48,248 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:48] "[36mGET /backup/single HTTP/1.1[0m" 304 -
+2025-10-22 09:20:48,344 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:48] "GET /api/device/list HTTP/1.1" 200 -
+2025-10-22 09:20:48,350 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:48] "[33mGET /api/backup/history HTTP/1.1[0m" 404 -
+2025-10-22 09:20:48,353 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:48] "GET /api/statistics HTTP/1.1" 200 -
+2025-10-22 09:20:48,354 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:48] "[33mGET /api/settings HTTP/1.1[0m" 404 -
+2025-10-22 09:20:48,358 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:48] "[33mGET /api/system/info HTTP/1.1[0m" 404 -
+2025-10-22 09:20:48,359 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:48] "GET /api/logs/list HTTP/1.1" 200 -
+2025-10-22 09:20:48,363 - werkzeug - INFO - 127.0.0.1 - - [22/Oct/2025 09:20:48] "GET /api/backup/recent HTTP/1.1" 200 -
+2025-10-22 09:23:08,543 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\api.py', reloading
+2025-10-22 09:23:08,544 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 09:23:08,545 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 09:23:08,810 - werkzeug - INFO -  * Restarting with stat
+2025-10-22 09:23:09,810 - apscheduler.scheduler - INFO - Scheduler started
+2025-10-22 09:23:09,811 - scheduler - ERROR - 加载计划任务失败: Working outside of application context.
+
+This typically means that you attempted to use functionality that needed
+the current application. To solve this, set up an application context
+with app.app_context(). See the documentation for more information.
+2025-10-22 09:23:09,812 - scheduler - INFO - 备份调度器已启动
+2025-10-22 09:23:09,821 - werkzeug - WARNING -  * Debugger is active!
+2025-10-22 09:23:09,826 - werkzeug - INFO -  * Debugger PIN: 907-116-072
+2025-10-22 09:23:16,875 - werkzeug - INFO -  * Detected change in 'D:\\autonetwork\\api.py', reloading
+2025-10-22 09:23:16,876 - apscheduler.scheduler - INFO - Scheduler has been shut down
+2025-10-22 09:23:16,877 - scheduler - INFO - 备份调度器已关闭
+2025-10-22 09:23:17,072 - werkzeug - INFO -  * Restarting with stat
