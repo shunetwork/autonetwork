@@ -142,8 +142,8 @@ def logs():
 @app.route('/compare')
 @login_required
 def compare():
-    """配置对比页面 - Vue 3 CDN版本"""
-    return send_from_directory('static', 'compare_vue.html')
+    """配置对比页面 - Vue 3 SPA"""
+    return send_from_directory('static', 'app.html')
 
 if __name__ == '__main__':
     with app.app_context():

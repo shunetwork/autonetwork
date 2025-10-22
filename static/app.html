@@ -234,6 +234,21 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        .form-tip {
+            font-size: 12px;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        .compare-details {
+            margin-top: 20px;
+        }
+
+        .compare-details h4 {
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
         
         @media (max-width: 768px) {
             .app-container {
@@ -754,6 +769,106 @@
                 </div>
             </div>
 
+            <!-- 配置对比页面 -->
+            <div v-else-if="currentPage === 'compare'">
+                <div class="page-header">
+                    <div class="page-title">
+                        <i class="el-icon-data-analysis"></i>
+                        配置对比
+                    </div>
+                    <div class="page-actions">
+                        <el-button type="primary" @click="startCompare" :loading="compareLoading">
+                            <i class="el-icon-play"></i>
+                            开始对比
+                        </el-button>
+                        <el-button @click="clearCompareSelection">
+                            <i class="el-icon-refresh"></i>
+                            清除选择
+                        </el-button>
+                    </div>
+                </div>
+
+                <!-- 对比配置 -->
+                <div class="content-card">
+                    <div class="card-header">
+                        <i class="el-icon-setting"></i>
+                        选择要对比的备份任务
+                    </div>
+                    <div class="card-body">
+                        <el-form :model="compareForm" label-width="120px">
+                            <el-form-item label="选择设备" required>
+                                <el-select v-model="compareForm.device_id" placeholder="请选择设备" style="width: 100%" @change="loadDeviceBackups">
+                                    <el-option 
+                                        v-for="device in devices" 
+                                        :key="device.id" 
+                                        :label="`${device.alias} (${device.ip_address})`" 
+                                        :value="device.id">
+                                    </el-option>
+                                </el-select>
+                                <div class="form-tip">选择设备后，将显示该设备的所有备份任务</div>
+                            </el-form-item>
+                            <el-form-item label="第一个备份(基准)" required>
+                                <el-select v-model="compareForm.first_backup_id" placeholder="请选择备份任务" style="width: 100%">
+                                    <el-option 
+                                        v-for="backup in deviceBackups" 
+                                        :key="backup.id" 
+                                        :label="`${backup.created_at} - ${backup.status === 'success' ? '成功' : '失败'}`" 
+                                        :value="backup.id">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="第二个备份(对比)" required>
+                                <el-select v-model="compareForm.second_backup_id" placeholder="请选择备份任务" style="width: 100%">
+                                    <el-option 
+                                        v-for="backup in deviceBackups" 
+                                        :key="backup.id" 
+                                        :label="`${backup.created_at} - ${backup.status === 'success' ? '成功' : '失败'}`" 
+                                        :value="backup.id">
+                                    </el-option>
+                                </el-select>
+                            </el-form-item>
+                            <el-form-item label="对比选项">
+                                <el-checkbox v-model="compareForm.ignore_whitespace">忽略空白字符差异</el-checkbox>
+                                <el-checkbox v-model="compareForm.ignore_case">忽略大小写差异</el-checkbox>
+                            </el-form-item>
+                            <el-form-item>
+                                <el-button type="primary" @click="compareLatestTwo">对比最新两个备份</el-button>
+                            </el-form-item>
+                        </el-form>
+                    </div>
+                </div>
+
+                <!-- 对比结果 -->
+                <div class="content-card" v-if="compareResult">
+                    <div class="card-header">
+                        <i class="el-icon-document"></i>
+                        对比结果
+                    </div>
+                    <div class="card-body">
+                        <el-alert 
+                            :title="`对比完成 - 发现 ${compareResult.differences} 处差异`" 
+                            :type="compareResult.differences > 0 ? 'warning' : 'success'"
+                            :description="`基准备份: ${compareResult.first_backup_time} | 对比备份: ${compareResult.second_backup_time}`"
+                            show-icon>
+                        </el-alert>
+                        <div v-if="compareResult.differences > 0" class="compare-details">
+                            <h4>差异详情:</h4>
+                            <el-table :data="compareResult.diff_details" stripe>
+                                <el-table-column prop="line_number" label="行号" width="80"></el-table-column>
+                                <el-table-column prop="type" label="类型" width="100">
+                                    <template #default="scope">
+                                        <el-tag :type="scope.row.type === 'added' ? 'success' : scope.row.type === 'removed' ? 'danger' : 'warning'">
+                                            {{ scope.row.type === 'added' ? '新增' : scope.row.type === 'removed' ? '删除' : '修改' }}
+                                        </el-tag>
+                                    </template>
+                                </el-table-column>
+                                <el-table-column prop="content" label="内容" show-overflow-tooltip></el-table-column>
+                            </el-table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 系统设置页面 -->
             <div v-else-if="currentPage === 'settings'">
                 <div class="page-header">
@@ -924,6 +1039,18 @@
                 const settingsSaving = ref(false);
                 const systemUptime = ref('0天0小时0分钟');
                 const memoryUsage = ref('0MB');
+
+                // 配置对比相关数据
+                const compareForm = ref({
+                    device_id: '',
+                    first_backup_id: '',
+                    second_backup_id: '',
+                    ignore_whitespace: true,
+                    ignore_case: false
+                });
+                const compareLoading = ref(false);
+                const deviceBackups = ref([]);
+                const compareResult = ref(null);
 
                 // 页面配置
                 const pageConfig = {
@@ -1367,6 +1494,92 @@
                     }
                 };
 
+                // 配置对比方法
+                const loadDeviceBackups = async () => {
+                    if (!compareForm.value.device_id) {
+                        deviceBackups.value = [];
+                        return;
+                    }
+                    
+                    try {
+                        const response = await fetch(`/api/backup/device/${compareForm.value.device_id}`);
+                        const data = await response.json();
+                        if (data.success) {
+                            deviceBackups.value = data.backups;
+                        }
+                    } catch (error) {
+                        console.error('加载设备备份失败:', error);
+                    }
+                };
+
+                const startCompare = async () => {
+                    if (!compareForm.value.first_backup_id || !compareForm.value.second_backup_id) {
+                        ElMessage.warning('请选择要对比的两个备份');
+                        return;
+                    }
+                    
+                    if (compareForm.value.first_backup_id === compareForm.value.second_backup_id) {
+                        ElMessage.warning('请选择不同的备份进行对比');
+                        return;
+                    }
+                    
+                    compareLoading.value = true;
+                    try {
+                        const response = await fetch('/api/backup/compare', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                first_backup_id: compareForm.value.first_backup_id,
+                                second_backup_id: compareForm.value.second_backup_id,
+                                ignore_whitespace: compareForm.value.ignore_whitespace,
+                                ignore_case: compareForm.value.ignore_case
+                            })
+                        });
+                        const data = await response.json();
+                        if (data.success) {
+                            compareResult.value = data.result;
+                            ElMessage.success('对比完成');
+                        } else {
+                            ElMessage.error(data.error || '对比失败');
+                        }
+                    } catch (error) {
+                        ElMessage.error('网络错误，请稍后重试');
+                    } finally {
+                        compareLoading.value = false;
+                    }
+                };
+
+                const compareLatestTwo = async () => {
+                    if (!compareForm.value.device_id) {
+                        ElMessage.warning('请先选择设备');
+                        return;
+                    }
+                    
+                    if (deviceBackups.value.length < 2) {
+                        ElMessage.warning('该设备至少需要2个备份才能进行对比');
+                        return;
+                    }
+                    
+                    // 按时间排序，选择最新的两个
+                    const sortedBackups = deviceBackups.value.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+                    compareForm.value.first_backup_id = sortedBackups[0].id;
+                    compareForm.value.second_backup_id = sortedBackups[1].id;
+                    
+                    await startCompare();
+                };
+
+                const clearCompareSelection = () => {
+                    compareForm.value = {
+                        device_id: '',
+                        first_backup_id: '',
+                        second_backup_id: '',
+                        ignore_whitespace: true,
+                        ignore_case: false
+                    };
+                    deviceBackups.value = [];
+                    compareResult.value = null;
+                };
+
                 // 工具方法
                 const formatTime = (timeStr) => {
                     if (!timeStr) return '-';
@@ -1392,8 +1605,7 @@
                     } else if (path === '/settings') {
                         currentPage.value = 'settings';
                     } else if (path === '/compare') {
-                        window.location.href = '/compare';
-                        return;
+                        currentPage.value = 'compare';
                     } else {
                         currentPage.value = 'home';
                     }
@@ -1437,6 +1649,10 @@
                     settingsSaving,
                     systemUptime,
                     memoryUsage,
+                    compareForm,
+                    compareLoading,
+                    deviceBackups,
+                    compareResult,
                     navigateTo,
                     getPageTitle,
                     getPageIcon,
@@ -1468,6 +1684,10 @@
                     saveSettings,
                     resetSettings,
                     loadSystemInfo,
+                    loadDeviceBackups,
+                    startCompare,
+                    compareLatestTwo,
+                    clearCompareSelection,
                     formatTime
                 };
             }
