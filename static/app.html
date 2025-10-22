@@ -343,6 +343,21 @@
             font-size: 12px;
         }
         
+        .logout-item {
+            margin-top: auto;
+            border-top: 1px solid #e5e7eb;
+            padding-top: 10px;
+        }
+        
+        .logout-link {
+            color: #ef4444 !important;
+        }
+        
+        .logout-link:hover {
+            background-color: #fef2f2 !important;
+            color: #dc2626 !important;
+        }
+        
         .el-input__inner,
         .el-select .el-input__inner,
         .el-textarea__inner {
@@ -702,6 +717,12 @@
                     <a href="#" class="nav-link" :class="{ active: currentPage === 'settings' }" @click="navigateTo('settings')">
                         <i class="el-icon-setting"></i>
                         系统设置
+                    </a>
+                </li>
+                <li class="nav-item logout-item">
+                    <a href="#" class="nav-link logout-link" @click="logout">
+                        <i class="el-icon-switch-button"></i>
+                        退出登录
                     </a>
                 </li>
             </ul>
@@ -1763,6 +1784,38 @@ SW1,192.168.1.10,22,ssh,admin,password789,cisco_ios</pre>
 
                 const getPageIcon = () => {
                     return pageConfig[currentPage.value]?.icon || 'el-icon-question';
+                };
+
+                const logout = async () => {
+                    try {
+                        await ElMessageBox.confirm(
+                            '确定要退出登录吗？',
+                            '确认退出',
+                            {
+                                confirmButtonText: '确定',
+                                cancelButtonText: '取消',
+                                type: 'warning'
+                            }
+                        );
+
+                        // 调用退出登录API
+                        const response = await fetch('/auth/logout', {
+                            method: 'POST'
+                        });
+
+                        if (response.ok) {
+                            ElMessage.success('已退出登录');
+                            // 跳转到登录页面
+                            window.location.href = '/auth/login';
+                        } else {
+                            ElMessage.error('退出登录失败');
+                        }
+                    } catch (error) {
+                        if (error !== 'cancel') {
+                            console.error('退出登录失败:', error);
+                            ElMessage.error('退出登录失败');
+                        }
+                    }
                 };
 
                 const refreshData = async (showError = false) => {
@@ -2939,6 +2992,7 @@ SW1,192.168.1.10,22,ssh,admin,password789,cisco_ios</pre>
                     navigateTo,
                     getPageTitle,
                     getPageIcon,
+                    logout,
                     refreshData,
                     loadDevices,
                     showAddDialog,

@@ -4,7 +4,7 @@
 用户认证模块
 """
 
-from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify, send_from_directory
 from flask_login import login_user, logout_user, login_required, current_user
 from werkzeug.security import check_password_hash, generate_password_hash
 from datetime import datetime
@@ -21,8 +21,7 @@ def login():
         password = request.form.get('password')
         
         if not username or not password:
-            flash('用户名和密码不能为空', 'error')
-            return render_template('login.html')
+            return redirect(url_for('auth.login', error='用户名和密码不能为空'))
         
         user = User.query.filter_by(username=username).first()
         
@@ -31,17 +30,16 @@ def login():
             next_page = request.args.get('next')
             return redirect(next_page) if next_page else redirect(url_for('index'))
         else:
-            flash('用户名或密码错误', 'error')
+            return redirect(url_for('auth.login', error='用户名或密码错误'))
     
-    return render_template('login.html')
+    return send_from_directory('static', 'login.html')
 
-@auth_bp.route('/logout')
+@auth_bp.route('/logout', methods=['POST'])
 @login_required
 def logout():
     """用户登出"""
     logout_user()
-    flash('已成功登出', 'info')
-    return redirect(url_for('auth.login'))
+    return jsonify({'success': True, 'message': '已成功登出'})
 
 @auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
